@@ -33,12 +33,31 @@
         android:textColorHint="#888888"
         android:layout_marginBottom="16dp"/>
 
-    <TextView
-        android:layout_width="wrap_content"
+    <!-- Container for Confidence Label and Value -->
+    <RelativeLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Confidence Level (0-100)"
-        android:textColor="@color/white"
-        android:layout_marginTop="8dp"/>
+        android:layout_marginTop="8dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Confidence Level"
+            android:textColor="@color/white"
+            android:layout_alignParentStart="true"
+            android:layout_centerVertical="true"/>
+
+        <TextView
+            android:id="@+id/confidenceValueText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="70%"
+            android:textColor="@color/white"
+            android:textSize="16sp"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"/>
+
+    </RelativeLayout>
 
     <SeekBar
         android:id="@+id/confidenceSeekBar"
@@ -54,7 +73,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Submit Log"
-        android:backgroundTint="#4CAF50"
+        android:backgroundTint="#333333"
         android:textColor="@color/white"/>
 
     <ProgressBar
