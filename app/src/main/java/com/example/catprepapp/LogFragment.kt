@@ -17,48 +17,43 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import android.R
+
+// We do NOT need "import android.R"
 
 class LogFragment : Fragment() {
 
     // --- Class properties ---
-    private lateinit var logHistoryRecyclerView: RecyclerView
     private lateinit var historyAdapter: LogHistoryAdapter
     private var logHistoryList = mutableListOf<LogHistoryItem>()
-    // NEW: TextViews to act as our fake spinners
-    private lateinit var subjectSelector: TextView
-    private lateinit var topicSelector: TextView
     private var topicsResponse: TopicsResponse? = null
     private var selectedSubject: String? = null
     private var selectedTopic: String? = null
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+        // The R here refers to our app's own generated R file.
         return inflater.inflate(R.layout.fragment_log, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        setupViews(view)
-        fetchInitialData()
-    }
 
-    private fun setupViews(view: View) {
-        subjectSelector = view.findViewById(R.id.subjectSelector)
-        topicSelector = view.findViewById(R.id.topicSelector)
-        logHistoryRecyclerView = view.findViewById(R.id.logHistoryRecyclerView)
-        logHistoryRecyclerView.layoutManager = LinearLayoutManager(context)
-        historyAdapter = LogHistoryAdapter(logHistoryList) { logItem, position -> onDeleteClicked(logItem, position) }
-        logHistoryRecyclerView.adapter = historyAdapter
-        
-        setupListeners(view)
-    }
-    
-    private fun setupListeners(view: View) {
+        // --- Find Views ---
+        val subjectSelector = view.findViewById<TextView>(R.id.subjectSelector)
+        val topicSelector = view.findViewById<TextView>(R.id.topicSelector)
+        val logHistoryRecyclerView = view.findViewById<RecyclerView>(R.id.logHistoryRecyclerView)
         val questionsEditText = view.findViewById<EditText>(R.id.questionsEditText)
         val confidenceSeekBar = view.findViewById<SeekBar>(R.id.confidenceSeekBar)
         val submitButton = view.findViewById<Button>(R.id.submitButton)
         val confidenceValueText = view.findViewById<TextView>(R.id.confidenceValueText)
-
+        
+        // --- Setup RecyclerView ---
+        logHistoryRecyclerView.layoutManager = LinearLayoutManager(context)
+        historyAdapter = LogHistoryAdapter(logHistoryList) { logItem, position ->
+            showDeleteConfirmationDialog(logItem, position)
+        }
+        logHistoryRecyclerView.adapter = historyAdapter
+        
+        // --- Setup Listeners ---
         confidenceSeekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
                 confidenceValueText.text = "$progress%"
@@ -67,14 +62,12 @@ class LogFragment : Fragment() {
             override fun onStopTrackingTouch(seekBar: SeekBar?) {}
         })
         
-        // --- NEW: Click listener for our fake subject spinner ---
         subjectSelector.setOnClickListener {
-            showSubjectSelectorDialog()
+            showSubjectSelectorDialog(subjectSelector, topicSelector)
         }
 
-        // --- NEW: Click listener for our fake topic spinner ---
         topicSelector.setOnClickListener {
-            showTopicSelectorDialog()
+            showTopicSelectorDialog(topicSelector)
         }
 
         submitButton.setOnClickListener {
@@ -87,101 +80,101 @@ class LogFragment : Fragment() {
                 return@setOnClickListener
             }
             
-            // ... (The rest of the submit logic remains exactly the same) ...
             val secretKey = "CATPREP123" // IMPORTANT: Replace
             val requestBody = LogRequestBody(secret = secretKey, topic = topic, questions = questions, confidence = confidence)
 
-            submitButton.isEnabled = false
-            view.findViewById<ProgressBar>(R.id.logProgressBar)?.visibility = View.VISIBLE
-
-            CoroutineScope(Dispatchers.IO).launch {
-                try {
-                    val response = ApiClient.apiService.submitLog(requestBody)
-                    withContext(Dispatchers.Main) {
-                        view.findViewById<ProgressBar>(R.id.logProgressBar)?.visibility = View.GONE
-                        submitButton.isEnabled = true
-                        if (response.isSuccessful) {
-                            Toast.makeText(context, "Log submitted successfully!", Toast.LENGTH_LONG).show()
-                            // Reset fields
-                            questionsEditText.text.clear()
-                            confidenceSeekBar.progress = 70
-                            confidenceValueText.text = "70%"
-                            subjectSelector.text = "Select Subject..."
-                            topicSelector.text = "Select Topic..."
-                            selectedSubject = null
-                            selectedTopic = null
-                            fetchLogHistory()
-                        } else {
-                            Toast.makeText(context, "Submission failed", Toast.LENGTH_LONG).show()
-                        }
-                    }
-                } catch (e: Exception) {
-                    withContext(Dispatchers.Main) {
-                       view.findViewById<ProgressBar>(R.id.logProgressBar)?.visibility = View.GONE
-                       submitButton.isEnabled = true
-                       Toast.makeText(context, "Error: ${e.message}", Toast.LENGTH_LONG).show()
-                    }
-                }
-            }
+            submitForm(requestBody, view, questionsEditText, confidenceSeekBar, confidenceValueText, subjectSelector)
         }
+
+        // --- Fetch initial data ---
+        fetchInitialData()
     }
     
-    // --- NEW: Functions to show the selection dialogs ---
-    private fun showSubjectSelectorDialog() {
+    // --- Dialogs and Data Logic ---
+    private fun showSubjectSelectorDialog(subjectTextView: TextView, topicTextView: TextView) {
         val subjects = arrayOf("QA", "DILR", "VARC")
-        AlertDialog.Builder(requireContext(), R.style.Theme_AppCompat_Dialog_Alert)
+        // Use the app's default dialog theme
+        AlertDialog.Builder(requireContext())
             .setTitle("Select Subject")
             .setItems(subjects) { dialog, which ->
                 selectedSubject = subjects[which]
-                subjectSelector.text = selectedSubject
-                
-                // Reset topic when subject changes
+                subjectTextView.text = selectedSubject
                 selectedTopic = null
-                topicSelector.text = "Select Topic..."
+                topicTextView.text = "Select Topic..."
                 dialog.dismiss()
             }
             .show()
     }
 
-    private fun showTopicSelectorDialog() {
+    private fun showTopicSelectorDialog(topicTextView: TextView) {
         if (selectedSubject == null) {
             Toast.makeText(context, "Please select a subject first", Toast.LENGTH_SHORT).show()
             return
         }
-
         val topicsForSubject = when (selectedSubject) {
             "QA" -> topicsResponse?.qa?.toTypedArray() ?: arrayOf()
             "DILR" -> topicsResponse?.dilr?.toTypedArray() ?: arrayOf()
             "VARC" -> topicsResponse?.varc?.toTypedArray() ?: arrayOf()
             else -> arrayOf()
         }
+        if (topicsForSubject.isEmpty()) return
 
-        if (topicsForSubject.isEmpty()) {
-            Toast.makeText(context, "No topics found for this subject", Toast.LENGTH_SHORT).show()
-            return
-        }
-
-        AlertDialog.Builder(requireContext(), R.style.Theme_AppCompat_Dialog_Alert)
+        AlertDialog.Builder(requireContext())
             .setTitle("Select Topic for $selectedSubject")
             .setItems(topicsForSubject) { dialog, which ->
                 selectedTopic = topicsForSubject[which]
-                topicSelector.text = selectedTopic
+                topicTextView.text = selectedTopic
                 dialog.dismiss()
             }
             .show()
     }
-    
-    // --- The rest of the functions (fetchInitialData, fetchTopics, etc.) remain the same ---
+
+    private fun submitForm(requestBody: LogRequestBody, view: View, qET: EditText, cSB: SeekBar, cVT: TextView, sS: TextView) {
+        val progressBar = view.findViewById<ProgressBar>(R.id.logProgressBar)
+        val submitButton = view.findViewById<Button>(R.id.submitButton)
+        
+        submitButton.isEnabled = false
+        progressBar.visibility = View.VISIBLE
+
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val response = ApiClient.apiService.submitLog(requestBody)
+                withContext(Dispatchers.Main) {
+                    progressBar.visibility = View.GONE
+                    submitButton.isEnabled = true
+                    if (response.isSuccessful) {
+                        Toast.makeText(context, "Log submitted successfully!", Toast.LENGTH_LONG).show()
+                        qET.text.clear()
+                        cSB.progress = 70
+                        cVT.text = "70%"
+                        sS.text = "Select Subject..."
+                        view.findViewById<TextView>(R.id.topicSelector).text = "Select Topic..."
+                        selectedSubject = null
+                        selectedTopic = null
+                        fetchLogHistory()
+                    } else {
+                        Toast.makeText(context, "Submission failed", Toast.LENGTH_LONG).show()
+                    }
+                }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                   progressBar.visibility = View.GONE
+                   submitButton.isEnabled = true
+                   Toast.makeText(context, "Error: ${e.message}", Toast.LENGTH_LONG).show()
+                }
+            }
+        }
+    }
+
     private fun fetchInitialData() {
         view?.findViewById<ProgressBar>(R.id.logProgressBar)?.visibility = View.VISIBLE
         CoroutineScope(Dispatchers.IO).launch {
-            val fetchedTopics = fetchTopics()
+            topicsResponse = fetchTopics()
             val fetchedHistory = fetchLogHistoryData()
             
             withContext(Dispatchers.Main) {
                 view?.findViewById<ProgressBar>(R.id.logProgressBar)?.visibility = View.GONE
-                topicsResponse = fetchedTopics
-                if (fetchedHistory != null) {
+                if(fetchedHistory != null) {
                     logHistoryList.clear()
                     logHistoryList.addAll(fetchedHistory)
                     historyAdapter.notifyDataSetChanged()
@@ -189,18 +182,19 @@ class LogFragment : Fragment() {
             }
         }
     }
+    
     private suspend fun fetchTopics(): TopicsResponse? {
         return try {
-            val response = ApiClient.apiService.getTopics()
-            if(response.isSuccessful) response.body() else null
+            ApiClient.apiService.getTopics().body()
         } catch (e: Exception) { null }
     }
+
     private suspend fun fetchLogHistoryData(): List<LogHistoryItem>? {
          return try {
-            val response = ApiClient.apiService.getLogHistory()
-            if (response.isSuccessful) response.body()?.history else null
+            ApiClient.apiService.getLogHistory().body()?.history
         } catch (e: Exception) { null }
     }
+    
     private fun fetchLogHistory() {
         CoroutineScope(Dispatchers.IO).launch {
             val newHistory = fetchLogHistoryData()
@@ -213,14 +207,16 @@ class LogFragment : Fragment() {
             }
         }
     }
-    private fun onDeleteClicked(logItem: LogHistoryItem, position: Int) {
+    
+    private fun showDeleteConfirmationDialog(logItem: LogHistoryItem, position: Int) {
         AlertDialog.Builder(requireContext())
             .setTitle("Delete Log")
-            .setMessage("Are you sure you want to delete this log entry?")
+            .setMessage("Are you sure?")
             .setPositiveButton("Delete") { _, _ -> performDelete(logItem, position) }
             .setNegativeButton("Cancel", null)
             .show()
     }
+
     private fun performDelete(logItem: LogHistoryItem, position: Int) {
          CoroutineScope(Dispatchers.IO).launch {
             try {
