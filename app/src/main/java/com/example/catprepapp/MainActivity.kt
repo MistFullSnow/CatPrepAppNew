@@ -22,10 +22,10 @@ class MainActivity : AppCompatActivity() {
         // Link BottomNavigationView with ViewPager
         bottomNavView.setOnItemSelectedListener { item ->
             when (item.itemId) {
-                R.id.navigation_schedule -> viewPager.setCurrentItem(0, false)
-                R.id.navigation_log -> viewPager.setCurrentItem(1, false)
-                R.id.navigation_dashboard -> viewPager.setCurrentItem(2, false)
-                R.id.navigation_catbot -> viewPager.setCurrentItem(3, false)
+                R.id.navigation_dashboard -> viewPager.setCurrentItem(0, false) // New
+                R.id.navigation_schedule -> viewPager.setCurrentItem(1, false) // New
+                R.id.navigation_log -> viewPager.setCurrentItem(2, false)      // New
+                R.id.navigation_catbot -> viewPager.setCurrentItem(3, false)   // Stays the same
             }
             true
         }
