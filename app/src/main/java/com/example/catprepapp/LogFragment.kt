@@ -22,11 +22,14 @@ class LogFragment : Fragment() {
 
     // --- Class properties ---
     private lateinit var logHistoryRecyclerView: RecyclerView
-    private lateinit var adapter: LogHistoryAdapter
+    private lateinit var historyAdapter: LogHistoryAdapter
     private var logHistoryList = mutableListOf<LogHistoryItem>()
-    private lateinit var subjectSpinner: Spinner
-    private lateinit var topicSpinner: Spinner
-    private var topicsResponse: TopicsResponse? = null // Store the fetched topics
+    // NEW: TextViews to act as our fake spinners
+    private lateinit var subjectSelector: TextView
+    private lateinit var topicSelector: TextView
+    private var topicsResponse: TopicsResponse? = null
+    private var selectedSubject: String? = null
+    private var selectedTopic: String? = null
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         return inflater.inflate(R.layout.fragment_log, container, false)
@@ -34,35 +37,25 @@ class LogFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
-        // --- Find all UI components ---
-        subjectSpinner = view.findViewById(R.id.subjectSpinner)
-        topicSpinner = view.findViewById(R.id.topicSpinner)
-        // ... (find other views)
-        val questionsEditText = view.findViewById<EditText>(R.id.questionsEditText)
-        val confidenceSeekBar = view.findViewById<SeekBar>(R.id.confidenceSeekBar)
-        val submitButton = view.findViewById<Button>(R.id.submitButton)
-        val progressBar = view.findViewById<ProgressBar>(R.id.logProgressBar)
-        val confidenceValueText = view.findViewById<TextView>(R.id.confidenceValueText)
-
-        // Setup RecyclerView
-        logHistoryRecyclerView = view.findViewById(R.id.logHistoryRecyclerView)
-        logHistoryRecyclerView.layoutManager = LinearLayoutManager(context)
-        adapter = LogHistoryAdapter(logHistoryList) { logItem, position -> onDeleteClicked(logItem, position) }
-        logHistoryRecyclerView.adapter = adapter
-        
-        // --- Setup Listeners ---
-        setupListeners(view)
-
-        // --- Fetch initial data ---
+        setupViews(view)
         fetchInitialData()
     }
 
+    private fun setupViews(view: View) {
+        subjectSelector = view.findViewById(R.id.subjectSelector)
+        topicSelector = view.findViewById(R.id.topicSelector)
+        logHistoryRecyclerView = view.findViewById(R.id.logHistoryRecyclerView)
+        logHistoryRecyclerView.layoutManager = LinearLayoutManager(context)
+        historyAdapter = LogHistoryAdapter(logHistoryList) { logItem, position -> onDeleteClicked(logItem, position) }
+        logHistoryRecyclerView.adapter = historyAdapter
+        
+        setupListeners(view)
+    }
+    
     private fun setupListeners(view: View) {
         val questionsEditText = view.findViewById<EditText>(R.id.questionsEditText)
         val confidenceSeekBar = view.findViewById<SeekBar>(R.id.confidenceSeekBar)
         val submitButton = view.findViewById<Button>(R.id.submitButton)
-        val progressBar = view.findViewById<ProgressBar>(R.id.logProgressBar)
         val confidenceValueText = view.findViewById<TextView>(R.id.confidenceValueText)
 
         confidenceSeekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
@@ -73,17 +66,18 @@ class LogFragment : Fragment() {
             override fun onStopTrackingTouch(seekBar: SeekBar?) {}
         })
         
-        // --- NEW: Listener for the Subject Spinner ---
-        subjectSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-                // When a subject is selected, update the topic spinner
-                updateTopicSpinner(parent?.getItemAtPosition(position).toString())
-            }
-            override fun onNothingSelected(parent: AdapterView<*>?) {}
+        // --- NEW: Click listener for our fake subject spinner ---
+        subjectSelector.setOnClickListener {
+            showSubjectSelectorDialog()
+        }
+
+        // --- NEW: Click listener for our fake topic spinner ---
+        topicSelector.setOnClickListener {
+            showTopicSelectorDialog()
         }
 
         submitButton.setOnClickListener {
-            val topic = if (topicSpinner.selectedItemPosition > 0) topicSpinner.selectedItem.toString() else ""
+            val topic = selectedTopic ?: ""
             val questions = questionsEditText.text.toString().toIntOrNull() ?: 0
             val confidence = confidenceSeekBar.progress
 
@@ -92,17 +86,18 @@ class LogFragment : Fragment() {
                 return@setOnClickListener
             }
             
+            // ... (The rest of the submit logic remains exactly the same) ...
             val secretKey = "CATPREP123" // IMPORTANT: Replace
             val requestBody = LogRequestBody(secret = secretKey, topic = topic, questions = questions, confidence = confidence)
 
             submitButton.isEnabled = false
-            progressBar.visibility = View.VISIBLE
+            view.findViewById<ProgressBar>(R.id.logProgressBar)?.visibility = View.VISIBLE
 
             CoroutineScope(Dispatchers.IO).launch {
                 try {
                     val response = ApiClient.apiService.submitLog(requestBody)
                     withContext(Dispatchers.Main) {
-                        progressBar.visibility = View.GONE
+                        view.findViewById<ProgressBar>(R.id.logProgressBar)?.visibility = View.GONE
                         submitButton.isEnabled = true
                         if (response.isSuccessful) {
                             Toast.makeText(context, "Log submitted successfully!", Toast.LENGTH_LONG).show()
@@ -110,7 +105,10 @@ class LogFragment : Fragment() {
                             questionsEditText.text.clear()
                             confidenceSeekBar.progress = 70
                             confidenceValueText.text = "70%"
-                            subjectSpinner.setSelection(0)
+                            subjectSelector.text = "Select Subject..."
+                            topicSelector.text = "Select Topic..."
+                            selectedSubject = null
+                            selectedTopic = null
                             fetchLogHistory()
                         } else {
                             Toast.makeText(context, "Submission failed", Toast.LENGTH_LONG).show()
@@ -118,74 +116,102 @@ class LogFragment : Fragment() {
                     }
                 } catch (e: Exception) {
                     withContext(Dispatchers.Main) {
-                       // ... error handling ...
+                       view.findViewById<ProgressBar>(R.id.logProgressBar)?.visibility = View.GONE
+                       submitButton.isEnabled = true
+                       Toast.makeText(context, "Error: ${e.message}", Toast.LENGTH_LONG).show()
                     }
                 }
             }
         }
     }
     
-    private fun fetchInitialData() {
-        CoroutineScope(Dispatchers.IO).launch {
-            topicsResponse = fetchTopics() // Fetch and store topics
-            withContext(Dispatchers.Main) {
-                if (topicsResponse != null) {
-                    setupSubjectSpinner()
-                } else {
-                    Toast.makeText(context, "Could not load topics.", Toast.LENGTH_SHORT).show()
-                }
+    // --- NEW: Functions to show the selection dialogs ---
+    private fun showSubjectSelectorDialog() {
+        val subjects = arrayOf("QA", "DILR", "VARC")
+        AlertDialog.Builder(requireContext(), R.style.Theme_AppCompat_Dialog_Alert)
+            .setTitle("Select Subject")
+            .setItems(subjects) { dialog, which ->
+                selectedSubject = subjects[which]
+                subjectSelector.text = selectedSubject
+                
+                // Reset topic when subject changes
+                selectedTopic = null
+                topicSelector.text = "Select Topic..."
+                dialog.dismiss()
             }
-            fetchLogHistory()
+            .show()
+    }
+
+    private fun showTopicSelectorDialog() {
+        if (selectedSubject == null) {
+            Toast.makeText(context, "Please select a subject first", Toast.LENGTH_SHORT).show()
+            return
         }
+
+        val topicsForSubject = when (selectedSubject) {
+            "QA" -> topicsResponse?.qa?.toTypedArray() ?: arrayOf()
+            "DILR" -> topicsResponse?.dilr?.toTypedArray() ?: arrayOf()
+            "VARC" -> topicsResponse?.varc?.toTypedArray() ?: arrayOf()
+            else -> arrayOf()
+        }
+
+        if (topicsForSubject.isEmpty()) {
+            Toast.makeText(context, "No topics found for this subject", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        AlertDialog.Builder(requireContext(), R.style.Theme_AppCompat_Dialog_Alert)
+            .setTitle("Select Topic for $selectedSubject")
+            .setItems(topicsForSubject) { dialog, which ->
+                selectedTopic = topicsForSubject[which]
+                topicSelector.text = selectedTopic
+                dialog.dismiss()
+            }
+            .show()
     }
     
-    private fun setupSubjectSpinner() {
-        val subjects = listOf("Select Subject...", "QA", "DILR", "VARC")
-        // Use our new custom dark layout
-        val adapter = ArrayAdapter(requireContext(), R.layout.spinner_item_dark, subjects)
-        adapter.setDropDownViewResource(R.layout.spinner_dropdown_item_dark)
-        subjectSpinner.adapter = adapter
-    }
-
-    private fun updateTopicSpinner(subject: String) {
-        val topicsForSubject = when (subject) {
-            "QA" -> topicsResponse?.qa ?: listOf()
-            "DILR" -> topicsResponse?.dilr ?: listOf()
-            "VARC" -> topicsResponse?.varc ?: listOf()
-            else -> listOf()
+    // --- The rest of the functions (fetchInitialData, fetchTopics, etc.) remain the same ---
+    private fun fetchInitialData() {
+        view?.findViewById<ProgressBar>(R.id.logProgressBar)?.visibility = View.VISIBLE
+        CoroutineScope(Dispatchers.IO).launch {
+            val fetchedTopics = fetchTopics()
+            val fetchedHistory = fetchLogHistoryData()
+            
+            withContext(Dispatchers.Main) {
+                view?.findViewById<ProgressBar>(R.id.logProgressBar)?.visibility = View.GONE
+                topicsResponse = fetchedTopics
+                if (fetchedHistory != null) {
+                    logHistoryList.clear()
+                    logHistoryList.addAll(fetchedHistory)
+                    historyAdapter.notifyDataSetChanged()
+                }
+            }
         }
-        val topicsWithPrompt = mutableListOf("Select Topic...").apply { addAll(topicsForSubject) }
-        // Use our new custom dark layout
-        val adapter = ArrayAdapter(requireContext(), R.layout.spinner_item_dark, topicsWithPrompt)
-        adapter.setDropDownViewResource(R.layout.spinner_dropdown_item_dark)
-        topicSpinner.adapter = adapter
     }
-
-    // --- The rest of the functions (fetchTopics, fetchLogHistory, onDeleteClicked, performDelete) remain the same ---
     private suspend fun fetchTopics(): TopicsResponse? {
         return try {
             val response = ApiClient.apiService.getTopics()
             if(response.isSuccessful) response.body() else null
-        } catch (e: Exception) {
-            null
-        }
+        } catch (e: Exception) { null }
     }
-
+    private suspend fun fetchLogHistoryData(): List<LogHistoryItem>? {
+         return try {
+            val response = ApiClient.apiService.getLogHistory()
+            if (response.isSuccessful) response.body()?.history else null
+        } catch (e: Exception) { null }
+    }
     private fun fetchLogHistory() {
-         CoroutineScope(Dispatchers.IO).launch {
-            try {
-                val response = ApiClient.apiService.getLogHistory()
-                withContext(Dispatchers.Main) {
-                    if (response.isSuccessful && response.body() != null) {
-                        logHistoryList.clear()
-                        logHistoryList.addAll(response.body()!!.history)
-                        adapter.notifyDataSetChanged()
-                    }
+        CoroutineScope(Dispatchers.IO).launch {
+            val newHistory = fetchLogHistoryData()
+            withContext(Dispatchers.Main) {
+                if (newHistory != null) {
+                    logHistoryList.clear()
+                    logHistoryList.addAll(newHistory)
+                    historyAdapter.notifyDataSetChanged()
                 }
-            } catch (e: Exception) {}
+            }
         }
     }
-    
     private fun onDeleteClicked(logItem: LogHistoryItem, position: Int) {
         AlertDialog.Builder(requireContext())
             .setTitle("Delete Log")
@@ -194,7 +220,6 @@ class LogFragment : Fragment() {
             .setNegativeButton("Cancel", null)
             .show()
     }
-
     private fun performDelete(logItem: LogHistoryItem, position: Int) {
          CoroutineScope(Dispatchers.IO).launch {
             try {
@@ -202,7 +227,7 @@ class LogFragment : Fragment() {
                 withContext(Dispatchers.Main) {
                     if (response.isSuccessful) {
                         Toast.makeText(context, "Log deleted", Toast.LENGTH_SHORT).show()
-                        adapter.removeItem(position)
+                        historyAdapter.removeItem(position)
                     } else {
                         Toast.makeText(context, "Deletion failed", Toast.LENGTH_SHORT).show()
                     }
