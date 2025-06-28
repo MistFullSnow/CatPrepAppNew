@@ -1,87 +1,115 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:padding="16dp"
-    android:background="#000000">
+    android:background="#000000"
+    android:fillViewport="true">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Log Your Study Session"
-        android:textColor="@color/white"
-        android:textSize="22sp"
-        android:layout_marginBottom="24dp"/>
-
-    <EditText
-        android:id="@+id/topicEditText"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Topic Studied (e.g., Arithmetic)"
-        android:textColor="@color/white"
-        android:textColorHint="#888888"
-        android:layout_marginBottom="16dp"/>
+        android:orientation="vertical"
+        android:padding="16dp">
 
-    <EditText
-        android:id="@+id/questionsEditText"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Number of Questions Solved"
-        android:inputType="number"
-        android:textColor="@color/white"
-        android:textColorHint="#888888"
-        android:layout_marginBottom="16dp"/>
+        <!-- All our existing EditTexts, SeekBars, Buttons go here -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Log Your Study Session"
+            android:textColor="@color/white"
+            android:textSize="22sp"
+            android:layout_marginBottom="24dp"/>
+        <!-- ... -->
+        <!-- ... (The EditTexts, TextViews, SeekBar, Button, ProgressBar from before) ... -->
+        <!-- ... They remain exactly the same as our last version ... -->
+        <!-- To save space, I'm not re-pasting them all here, but they should be in this spot -->
+        
+        <EditText
+            android:id="@+id/topicEditText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Topic Studied (e.g., Arithmetic)"
+            android:textColor="@color/white"
+            android:textColorHint="#888888"
+            android:layout_marginBottom="16dp"/>
 
-    <!-- Container for Confidence Label and Value -->
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp">
+        <EditText
+            android:id="@+id/questionsEditText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Number of Questions Solved"
+            android:inputType="number"
+            android:textColor="@color/white"
+            android:textColorHint="#888888"
+            android:layout_marginBottom="16dp"/>
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Confidence Level"
+                android:textColor="@color/white"
+                android:layout_alignParentStart="true"
+                android:layout_centerVertical="true"/>
+            <TextView
+                android:id="@+id/confidenceValueText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="70%"
+                android:textColor="@color/white"
+                android:textSize="16sp"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"/>
+        </RelativeLayout>
+
+        <SeekBar
+            android:id="@+id/confidenceSeekBar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:max="100"
+            android:progress="70"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="24dp"/>
+
+        <Button
+            android:id="@+id/submitButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Submit Log"
+            android:backgroundTint="#333333"
+            android:textColor="@color/white"/>
+
+        <ProgressBar
+            android:id="@+id/logProgressBar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:visibility="gone"
+            android:layout_marginTop="16dp"/>
+        
+        <!-- NEW: Divider and RecyclerView for history -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="#444444"
+            android:layout_marginTop="32dp"
+            android:layout_marginBottom="16dp"/>
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Confidence Level"
+            android:text="Log History"
             android:textColor="@color/white"
-            android:layout_alignParentStart="true"
-            android:layout_centerVertical="true"/>
+            android:textSize="20sp"
+            android:layout_marginBottom="16dp"/>
+        
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/logHistoryRecyclerView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
 
-        <TextView
-            android:id="@+id/confidenceValueText"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="70%"
-            android:textColor="@color/white"
-            android:textSize="16sp"
-            android:layout_alignParentEnd="true"
-            android:layout_centerVertical="true"/>
-
-    </RelativeLayout>
-
-    <SeekBar
-        android:id="@+id/confidenceSeekBar"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:max="100"
-        android:progress="70"
-        android:layout_marginTop="8dp"
-        android:layout_marginBottom="24dp"/>
-
-    <Button
-        android:id="@+id/submitButton"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Submit Log"
-        android:backgroundTint="#333333"
-        android:textColor="@color/white"/>
-
-    <ProgressBar
-        android:id="@+id/logProgressBar"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:visibility="gone"
-        android:layout_marginTop="16dp"/>
-
-</LinearLayout>
+    </LinearLayout>
+</ScrollView>
