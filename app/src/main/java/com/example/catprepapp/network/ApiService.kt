@@ -10,7 +10,7 @@ import retrofit2.http.POST   // New import
 
 // This is the full URL of your deployed Google Apps Script
 // IMPORTANT: Replace "YOUR_WEB_APP_URL" with your actual URL
-private const val BASE_URL = "https://script.google.com/macros/s/AKfycbzLkdW1_cC9FOER5-RXKsrR6JLF-e7gDvTteXyCgsMijMvthAsc95bugt_2PHKTTR4/"
+private const val BASE_URL = "https://script.google.com/macros/s/AKfycbwekBjc67k9KRUUwXpFeayFPBRmYFpSGgDNesHvhSxYhcSEgb-Uhu391yFbshS3XPsa/"
 
 // IMPORTANT: Replace "YOUR_SECRET_KEY" with the key you chose (e.g., "CATPREP123")
 private const val SECRET_KEY = "CATPREP123"
