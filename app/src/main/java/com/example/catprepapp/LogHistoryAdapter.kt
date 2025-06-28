@@ -3,19 +3,32 @@ package com.example.catprepapp
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageButton // <-- NEW IMPORT
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.catprepapp.network.LogHistoryItem
 import java.text.SimpleDateFormat
 import java.util.*
 
-class LogHistoryAdapter(private val logList: List<LogHistoryItem>) :
-    RecyclerView.Adapter<LogHistoryAdapter.LogViewHolder>() {
+// --- MODIFIED CONSTRUCTOR: It now accepts a function to handle deletion ---
+class LogHistoryAdapter(
+    private val logList: MutableList<LogHistoryItem>,
+    private val onDeleteClick: (logItem: LogHistoryItem, position: Int) -> Unit
+) : RecyclerView.Adapter<LogHistoryAdapter.LogViewHolder>() {
 
-    class LogViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+    inner class LogViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val dateText: TextView = itemView.findViewById(R.id.logDateText)
         val topicText: TextView = itemView.findViewById(R.id.logTopicText)
         val detailsText: TextView = itemView.findViewById(R.id.logDetailsText)
+        private val deleteButton: ImageButton = itemView.findViewById(R.id.deleteButton) // <-- Find the button
+
+        // --- NEW: Set up the click listener ---
+        init {
+            deleteButton.setOnClickListener {
+                // When clicked, call the lambda function passed from the fragment
+                onDeleteClick(logList[adapterPosition], adapterPosition)
+            }
+        }
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): LogViewHolder {
@@ -27,7 +40,6 @@ class LogHistoryAdapter(private val logList: List<LogHistoryItem>) :
     override fun onBindViewHolder(holder: LogViewHolder, position: Int) {
         val item = logList[position]
         
-        // Format the date string nicely
         try {
             val parser = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault())
             parser.timeZone = TimeZone.getTimeZone("UTC")
@@ -35,7 +47,7 @@ class LogHistoryAdapter(private val logList: List<LogHistoryItem>) :
             val formatter = SimpleDateFormat("MMM dd, yyyy", Locale.getDefault())
             holder.dateText.text = formatter.format(date)
         } catch (e: Exception) {
-            holder.dateText.text = item.date // Fallback to raw date string
+            holder.dateText.text = item.date
         }
 
         holder.topicText.text = item.topic
@@ -43,4 +55,10 @@ class LogHistoryAdapter(private val logList: List<LogHistoryItem>) :
     }
 
     override fun getItemCount() = logList.size
+    
+    // --- NEW: Function to remove an item from the list and notify the UI ---
+    fun removeItem(position: Int) {
+        logList.removeAt(position)
+        notifyItemRemoved(position)
+    }
 }
