@@ -5,6 +5,8 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.GET
 import retrofit2.http.Query
+import retrofit2.http.Body // New import
+import retrofit2.http.POST   // New import
 
 // This is the full URL of your deployed Google Apps Script
 // IMPORTANT: Replace "YOUR_WEB_APP_URL" with your actual URL
@@ -26,6 +28,10 @@ interface ApiService {
         @Query("action") action: String = "getSchedule",
         @Query("secret") secret: String = SECRET_KEY
     ): Response<ScheduleResponse>
+    
+    // Inside the ApiService interface
+    @POST("exec")
+    suspend fun submitLog(@Body requestBody: LogRequestBody): Response<Unit> // Response can be empty
 }
 
 // This creates a public object that the rest of our app can use to call the API
@@ -34,3 +40,11 @@ object ApiClient {
         retrofit.create(ApiService::class.java)
     }
 }
+// Add this new data class
+data class LogRequestBody(
+    val action: String = "submitLog",
+    val secret: String,
+    val topic: String,
+    val questions: Int,
+    val confidence: Int
+)
