@@ -21,6 +21,19 @@ data class LogHistoryResponse(
     val history: List<LogHistoryItem>
 )
 
+// Add these two new data classes
+data class WeakestTopic(
+    val topic: String,
+    val avgConfidence: Int
+)
+
+data class DashboardResponse(
+    val totalQuestions: Int,
+    val avgConfidence: Int,
+    val streakDays: Int,
+    val weakestTopics: List<WeakestTopic>
+)
+
 // This is the full URL of your deployed Google Apps Script
 // IMPORTANT: Replace "YOUR_WEB_APP_URL" with your actual URL
 private const val BASE_URL = "https://script.google.com/macros/s/AKfycbzbvWxrqB_JPZoY-w3hz-MaNfs0vwQuyyD48V7d0I7MSfYFIAI3RywEGzqfAbZ-7maY/"
@@ -59,6 +72,13 @@ interface ApiService {
         @Query("secret") secret: String = SECRET_KEY,
         @Query("rowId") rowId: Int
     ): Response<Unit> // We don't care about the response body, just that it succeeds
+    
+    // Inside the ApiService interface
+    @GET("exec")
+    suspend fun getDashboard(
+        @Query("action") action: String = "getDashboard",
+        @Query("secret") secret: String = SECRET_KEY
+    ): Response<DashboardResponse>
     
 }
 
