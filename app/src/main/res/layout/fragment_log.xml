@@ -1,15 +1,68 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp"
     android:background="#000000">
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:textColor="#FFFFFF"
-        android:textSize="20sp"
-        android:text="Log Fragment" />
+        android:text="Log Your Study Session"
+        android:textColor="@color/white"
+        android:textSize="22sp"
+        android:layout_marginBottom="24dp"/>
 
-</FrameLayout>
+    <EditText
+        android:id="@+id/topicEditText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Topic Studied (e.g., Arithmetic)"
+        android:textColor="@color/white"
+        android:textColorHint="#888888"
+        android:layout_marginBottom="16dp"/>
+
+    <EditText
+        android:id="@+id/questionsEditText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Number of Questions Solved"
+        android:inputType="number"
+        android:textColor="@color/white"
+        android:textColorHint="#888888"
+        android:layout_marginBottom="16dp"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Confidence Level (0-100)"
+        android:textColor="@color/white"
+        android:layout_marginTop="8dp"/>
+
+    <SeekBar
+        android:id="@+id/confidenceSeekBar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:max="100"
+        android:progress="70"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="24dp"/>
+
+    <Button
+        android:id="@+id/submitButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Submit Log"
+        android:backgroundTint="#4CAF50"
+        android:textColor="@color/white"/>
+
+    <ProgressBar
+        android:id="@+id/logProgressBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:visibility="gone"
+        android:layout_marginTop="16dp"/>
+
+</LinearLayout>
