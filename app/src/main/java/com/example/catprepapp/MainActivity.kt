@@ -3,30 +3,39 @@ package com.example.catprepapp
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.viewpager2.widget.ViewPager2
-import com.google.android.material.tabs.TabLayout
-import com.google.android.material.tabs.TabLayoutMediator
+import com.google.android.material.bottomnavigation.BottomNavigationView
 
 class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        // This links to the activity_main.xml file we updated
         setContentView(R.layout.activity_main)
 
-        // Find the views from our XML layout
-        val tabLayout = findViewById<TabLayout>(R.id.tabLayout)
         val viewPager = findViewById<ViewPager2>(R.id.viewPager)
+        val bottomNavView = findViewById<BottomNavigationView>(R.id.bottomNavView)
 
-        // Create and set the adapter
-        val adapter = ViewPagerAdapter(this)
-        viewPager.adapter = adapter
+        viewPager.adapter = ViewPagerAdapter(this)
 
-        // Define the titles for our tabs
-        val tabTitles = arrayOf("Schedule", "Log", "Dashboard", "CatBot")
+        // Disable swiping for now, navigation will be through tabs only
+        viewPager.isUserInputEnabled = false
 
-        // Connect the TabLayout with the ViewPager
-        TabLayoutMediator(tabLayout, viewPager) { tab, position ->
-            tab.text = tabTitles[position]
-        }.attach()
+        // Link BottomNavigationView with ViewPager
+        bottomNavView.setOnItemSelectedListener { item ->
+            when (item.itemId) {
+                R.id.navigation_schedule -> viewPager.setCurrentItem(0, false)
+                R.id.navigation_log -> viewPager.setCurrentItem(1, false)
+                R.id.navigation_dashboard -> viewPager.setCurrentItem(2, false)
+                R.id.navigation_catbot -> viewPager.setCurrentItem(3, false)
+            }
+            true
+        }
+
+        // Link ViewPager with BottomNavigationView for highlighting the correct tab
+        viewPager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
+            override fun onPageSelected(position: Int) {
+                super.onPageSelected(position)
+                bottomNavView.menu.getItem(position).isChecked = true
+            }
+        })
     }
 }
