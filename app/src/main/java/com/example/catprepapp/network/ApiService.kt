@@ -23,7 +23,7 @@ data class LogHistoryResponse(
 
 // This is the full URL of your deployed Google Apps Script
 // IMPORTANT: Replace "YOUR_WEB_APP_URL" with your actual URL
-private const val BASE_URL = "https://script.google.com/macros/s/AKfycbyK7XCRLYVmnKF4K_sBQNsrMSuu8ffnX80fpyxvqu-6o35QLsLvMafM-fAZpU3tmavL/"
+private const val BASE_URL = "https://script.google.com/macros/s/AKfycbzbvWxrqB_JPZoY-w3hz-MaNfs0vwQuyyD48V7d0I7MSfYFIAI3RywEGzqfAbZ-7maY/"
 
 // IMPORTANT: Replace "YOUR_SECRET_KEY" with the key you chose (e.g., "CATPREP123")
 private const val SECRET_KEY = "CATPREP123"
@@ -52,6 +52,14 @@ interface ApiService {
         @Query("action") action: String = "getLogHistory",
         @Query("secret") secret: String = SECRET_KEY
     ): Response<LogHistoryResponse>
+
+    @GET("exec")
+    suspend fun deleteLog(
+        @Query("action") action: String = "deleteLog",
+        @Query.("secret") secret: String = SECRET_KEY,
+        @Query("rowId") rowId: Int
+    ): Response<Unit> // We don't care about the response body, just that it succeeds
+    
 }
 
 // This creates a public object that the rest of our app can use to call the API
