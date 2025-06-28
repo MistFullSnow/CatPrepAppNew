@@ -28,7 +28,7 @@
             android:id="@+id/subjectSpinner"
             android:layout_width="match_parent"
             android:layout_height="50dp"
-            android:background="@android:drawable/btn_dropdown"
+            android:background="@drawable/spinner_background_dark"
             android:backgroundTint="@android:color/white"
             android:layout_marginBottom="16dp"/>
         
@@ -36,7 +36,7 @@
             android:id="@+id/topicSpinner"
             android:layout_width="match_parent"
             android:layout_height="50dp"
-            android:background="@android:drawable/btn_dropdown"
+            android:background="@drawable/spinner_background_dark"
             android:backgroundTint="@android:color/white"
             android:layout_marginBottom="16dp"/>
 
