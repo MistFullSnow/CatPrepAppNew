@@ -56,7 +56,7 @@ interface ApiService {
     @GET("exec")
     suspend fun deleteLog(
         @Query("action") action: String = "deleteLog",
-        @Query.("secret") secret: String = SECRET_KEY,
+        @Query("secret") secret: String = SECRET_KEY,
         @Query("rowId") rowId: Int
     ): Response<Unit> // We don't care about the response body, just that it succeeds
     
