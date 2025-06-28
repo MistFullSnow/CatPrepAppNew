@@ -8,6 +8,19 @@ import retrofit2.http.Query
 import retrofit2.http.Body // New import
 import retrofit2.http.POST   // New import
 
+// Add these two new data classes
+data class LogHistoryItem(
+    val id: Int,
+    val date: String,
+    val topic: String,
+    val questions: Int,
+    val confidence: Int
+)
+
+data class LogHistoryResponse(
+    val history: List<LogHistoryItem>
+)
+
 // This is the full URL of your deployed Google Apps Script
 // IMPORTANT: Replace "YOUR_WEB_APP_URL" with your actual URL
 private const val BASE_URL = "https://script.google.com/macros/s/AKfycbyK7XCRLYVmnKF4K_sBQNsrMSuu8ffnX80fpyxvqu-6o35QLsLvMafM-fAZpU3tmavL/"
@@ -32,6 +45,13 @@ interface ApiService {
     // Inside the ApiService interface
     @POST("exec")
     suspend fun submitLog(@Body requestBody: LogRequestBody): Response<Unit> // Response can be empty
+
+    // Inside the ApiService interface
+    @GET("exec")
+    suspend fun getLogHistory(
+        @Query("action") action: String = "getLogHistory",
+        @Query("secret") secret: String = SECRET_KEY
+    ): Response<LogHistoryResponse>
 }
 
 // This creates a public object that the rest of our app can use to call the API
@@ -47,4 +67,6 @@ data class LogRequestBody(
     val topic: String,
     val questions: Int,
     val confidence: Int
+    
 )
+
