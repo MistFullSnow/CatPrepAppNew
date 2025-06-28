@@ -8,7 +8,7 @@ import retrofit2.http.Query
 
 // This is the full URL of your deployed Google Apps Script
 // IMPORTANT: Replace "YOUR_WEB_APP_URL" with your actual URL
-private const val BASE_URL = "https://script.google.com/macros/s/AKfycbz8aaILh739YICST1YGj9IiNNEm0GfTcY2gwAlfRKfoxAgpoJIu_-WI8A31zNJj4oao/exec"
+private const val BASE_URL = "https://script.google.com/macros/s/AKfycbz8aaILh739YICST1YGj9IiNNEm0GfTcY2gwAlfRKfoxAgpoJIu_-WI8A31zNJj4oao/"
 
 // IMPORTANT: Replace "YOUR_SECRET_KEY" with the key you chose (e.g., "CATPREP123")
 private const val SECRET_KEY = "CATPREP123"
