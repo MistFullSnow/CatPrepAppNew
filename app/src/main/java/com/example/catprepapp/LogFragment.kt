@@ -94,7 +94,7 @@ class LogFragment : Fragment() {
     private fun showSubjectSelectorDialog(subjectTextView: TextView, topicTextView: TextView) {
         val subjects = arrayOf("QA", "DILR", "VARC")
         // Use the app's default dialog theme
-        AlertDialog.Builder(requireContext())
+        AlertDialog.Builder(requireContext(), R.style.AlertDialog_Dark)
             .setTitle("Select Subject")
             .setItems(subjects) { dialog, which ->
                 selectedSubject = subjects[which]
@@ -119,7 +119,7 @@ class LogFragment : Fragment() {
         }
         if (topicsForSubject.isEmpty()) return
 
-        AlertDialog.Builder(requireContext())
+        AlertDialog.Builder(requireContext(), R.style.AlertDialog_Dark)
             .setTitle("Select Topic for $selectedSubject")
             .setItems(topicsForSubject) { dialog, which ->
                 selectedTopic = topicsForSubject[which]
@@ -209,7 +209,7 @@ class LogFragment : Fragment() {
     }
     
     private fun showDeleteConfirmationDialog(logItem: LogHistoryItem, position: Int) {
-        AlertDialog.Builder(requireContext())
+        AlertDialog.Builder(requireContext(), R.style.AlertDialog_Dark)
             .setTitle("Delete Log")
             .setMessage("Are you sure?")
             .setPositiveButton("Delete") { _, _ -> performDelete(logItem, position) }
