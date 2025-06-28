@@ -11,11 +11,11 @@ class ViewPagerAdapter(fragmentActivity: FragmentActivity) :
 
     override fun createFragment(position: Int): Fragment {
         return when (position) {
-            0 -> ScheduleFragment()
-            1 -> LogFragment()
-            2 -> DashboardFragment()
-            3 -> CatBotFragment()
-            else -> ScheduleFragment()
+            0 -> DashboardFragment() // Was ScheduleFragment
+            1 -> ScheduleFragment() // Was LogFragment
+            2 -> LogFragment()      // Was DashboardFragment
+            3 -> CatBotFragment()   // Stays the same
+            else -> DashboardFragment()
         }
     }
 }
