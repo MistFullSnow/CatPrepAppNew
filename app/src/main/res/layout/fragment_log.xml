@@ -20,25 +20,34 @@
             android:textSize="22sp"
             android:layout_marginBottom="24dp"/>
         <!-- ... -->
-        <!-- ... (The EditTexts, TextViews, SeekBar, Button, ProgressBar from before) ... -->
-        <!-- ... They remain exactly the same as our last version ... -->
-        <!-- To save space, I'm not re-pasting them all here, but they should be in this spot -->
-        <!-- NEW: Spinner for selecting the subject -->
-        <Spinner
-            android:id="@+id/subjectSpinner"
+
+        <!-- This TextView will look like a spinner but give us full style control -->
+        <TextView
+            android:id="@+id/subjectSelector"
             android:layout_width="match_parent"
             android:layout_height="50dp"
+            android:layout_marginBottom="16dp"
             android:background="@drawable/spinner_background_dark"
-            android:backgroundTint="@android:color/white"
-            android:layout_marginBottom="16dp"/>
+            android:gravity="center_vertical"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp"
+            android:text="Select Subject..."
+            android:textColor="#FFFFFF"
+            android:textSize="18sp" />
         
-        <Spinner
-            android:id="@+id/topicSpinner"
+        <!-- This is the second "spinner" for the topic -->
+        <TextView
+            android:id="@+id/topicSelector"
             android:layout_width="match_parent"
             android:layout_height="50dp"
+            android:layout_marginBottom="16dp"
             android:background="@drawable/spinner_background_dark"
-            android:backgroundTint="@android:color/white"
-            android:layout_marginBottom="16dp"/>
+            android:gravity="center_vertical"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp"
+            android:text="Select Topic..."
+            android:textColor="#FFFFFF"
+            android:textSize="18sp" />
 
         <EditText
             android:id="@+id/questionsEditText"
