@@ -1,67 +1,92 @@
-override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-    super.onViewCreated(view, savedInstanceState)
+package com.example.catprepapp
 
-    val topicEditText = view.findViewById<EditText>(R.id.topicEditText)
-    val questionsEditText = view.findViewById<EditText>(R.id.questionsEditText)
-    val confidenceSeekBar = view.findViewById<SeekBar>(R.id.confidenceSeekBar)
-    val submitButton = view.findViewById<Button>(R.id.submitButton)
-    val progressBar = view.findViewById<ProgressBar>(R.id.logProgressBar)
-    val confidenceValueText = view.findViewById<TextView>(R.id.confidenceValueText) // Find the new TextView
+import android.os.Bundle
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.widget.*
+import androidx.fragment.app.Fragment
+import com.example.catprepapp.network.ApiClient
+import com.example.catprepapp.network.LogRequestBody
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
-    // --- NEW CODE: SeekBar Listener ---
-    confidenceSeekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
-        override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
-            // Update the TextView as the slider moves
-            confidenceValueText.text = "$progress%"
-        }
-        override fun onStartTrackingTouch(seekBar: SeekBar?) {}
-        override fun onStopTrackingTouch(seekBar: SeekBar?) {}
-    })
-    // --- END OF NEW CODE ---
+class LogFragment : Fragment() {
 
-    submitButton.setOnClickListener {
-        val topic = topicEditText.text.toString()
-        val questions = questionsEditText.text.toString().toIntOrNull() ?: 0
-        val confidence = confidenceSeekBar.progress
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
+        return inflater.inflate(R.layout.fragment_log, container, false)
+    }
 
-        if (topic.isBlank()) {
-            Toast.makeText(context, "Please enter a topic", Toast.LENGTH_SHORT).show()
-            return@setOnClickListener
-        }
-        
-        val secretKey = "CATPREP123" // IMPORTANT: Replace with your actual key
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
 
-        val requestBody = LogRequestBody(
-            secret = secretKey,
-            topic = topic,
-            questions = questions,
-            confidence = confidence
-        )
+        val topicEditText = view.findViewById<EditText>(R.id.topicEditText)
+        val questionsEditText = view.findViewById<EditText>(R.id.questionsEditText)
+        val confidenceSeekBar = view.findViewById<SeekBar>(R.id.confidenceSeekBar)
+        val submitButton = view.findViewById<Button>(R.id.submitButton)
+        val progressBar = view.findViewById<ProgressBar>(R.id.logProgressBar)
+        val confidenceValueText = view.findViewById<TextView>(R.id.confidenceValueText) // Find the new TextView
 
-        submitButton.isEnabled = false
-        progressBar.visibility = View.VISIBLE
+        // --- SeekBar Listener ---
+        confidenceSeekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+                // Update the TextView as the slider moves
+                confidenceValueText.text = "$progress%"
+            }
+            override fun onStartTrackingTouch(seekBar: SeekBar?) {}
+            override fun onStopTrackingTouch(seekBar: SeekBar?) {}
+        })
+        // --- END OF Listener ---
 
-        CoroutineScope(Dispatchers.IO).launch {
-            try {
-                val response = ApiClient.apiService.submitLog(requestBody)
-                withContext(Dispatchers.Main) {
-                    progressBar.visibility = View.GONE
-                    submitButton.isEnabled = true
-                    if (response.isSuccessful) {
-                        Toast.makeText(context, "Log submitted successfully!", Toast.LENGTH_LONG).show()
-                        topicEditText.text.clear()
-                        questionsEditText.text.clear()
-                        confidenceSeekBar.progress = 70
-                        confidenceValueText.text = "70%" // Reset the text view
-                    } else {
-                        Toast.makeText(context, "Submission failed: ${response.code()}", Toast.LENGTH_LONG).show()
+        submitButton.setOnClickListener {
+            val topic = topicEditText.text.toString()
+            val questions = questionsEditText.text.toString().toIntOrNull() ?: 0
+            val confidence = confidenceSeekBar.progress
+
+            if (topic.isBlank()) {
+                Toast.makeText(context, "Please enter a topic", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            val secretKey = "CATPREP123" // IMPORTANT: Replace with your actual key
+
+            val requestBody = LogRequestBody(
+                secret = secretKey,
+                topic = topic,
+                questions = questions,
+                confidence = confidence
+            )
+
+            submitButton.isEnabled = false
+            progressBar.visibility = View.VISIBLE
+
+            CoroutineScope(Dispatchers.IO).launch {
+                try {
+                    val response = ApiClient.apiService.submitLog(requestBody)
+                    withContext(Dispatchers.Main) {
+                        progressBar.visibility = View.GONE
+                        submitButton.isEnabled = true
+                        if (response.isSuccessful) {
+                            Toast.makeText(context, "Log submitted successfully!", Toast.LENGTH_LONG).show()
+                            topicEditText.text.clear()
+                            questionsEditText.text.clear()
+                            confidenceSeekBar.progress = 70
+                            confidenceValueText.text = "70%" // Reset the text view
+                        } else {
+                            Toast.makeText(context, "Submission failed: ${response.code()}", Toast.LENGTH_LONG).show()
+                        }
                     }
-                }
-            } catch (e: Exception) {
-                withContext(Dispatchers.Main) {
-                    progressBar.visibility = View.GONE
-                    submitButton.isEnabled = true
-                    Toast.makeText(context, "Error: ${e.message}", Toast.LENGTH_LONG).show()
+                } catch (e: Exception) {
+                    withContext(Dispatchers.Main) {
+                        progressBar.visibility = View.GONE
+                        submitButton.isEnabled = true
+                        Toast.makeText(context, "Error: ${e.message}", Toast.LENGTH_LONG).show()
+                    }
                 }
             }
         }
