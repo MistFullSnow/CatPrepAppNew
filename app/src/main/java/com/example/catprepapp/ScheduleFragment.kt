@@ -60,7 +60,7 @@ class ScheduleFragment : Fragment() {
                         }
                     } else {
                         emptyView.text = "Failed to load schedule. Error: ${response.code()}"
-                        empty_view.visibility = View.VISIBLE
+                        emptyView.visibility = View.VISIBLE 
                     }
                 }
             } catch (e: Exception) {
