@@ -7,6 +7,8 @@ import android.view.ViewGroup
 import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.fragment.app.Fragment
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.example.catprepapp.network.ApiClient
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -15,62 +17,57 @@ import kotlinx.coroutines.withContext
 
 class ScheduleFragment : Fragment() {
 
-    private lateinit var scheduleTextView: TextView
+    private lateinit var recyclerView: RecyclerView
     private lateinit var progressBar: ProgressBar
+    private lateinit var emptyView: TextView
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_schedule, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Find the views from the layout
-        scheduleTextView = view.findViewById(R.id.scheduleTextView)
+        recyclerView = view.findViewById(R.id.scheduleRecyclerView)
         progressBar = view.findViewById(R.id.progressBar)
+        emptyView = view.findViewById(R.id.emptyView)
 
-        // Fetch the data from the API
+        recyclerView.layoutManager = LinearLayoutManager(context)
+        
         fetchSchedule()
     }
 
     private fun fetchSchedule() {
-        // Show the progress bar and launch a coroutine for the network call
         progressBar.visibility = View.VISIBLE
+        emptyView.visibility = View.GONE
+        recyclerView.visibility = View.GONE
+
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 val response = ApiClient.apiService.getSchedule()
-
-                // Switch to the Main thread to update the UI
                 withContext(Dispatchers.Main) {
                     progressBar.visibility = View.GONE
                     if (response.isSuccessful && response.body() != null) {
                         val scheduleItems = response.body()!!.schedule
                         if (scheduleItems.isNotEmpty()) {
-                            // Format the data into a nice string
-                            val scheduleText = StringBuilder()
-                            for (item in scheduleItems) {
-                                scheduleText.append("🕒 ${item.time}\n")
-                                scheduleText.append("📚 ${item.topic}\n")
-                                scheduleText.append("📝 ${item.notes}\n\n")
-                            }
-                            scheduleTextView.text = scheduleText.toString()
+                            recyclerView.adapter = ScheduleAdapter(scheduleItems)
+                            recyclerView.visibility = View.VISIBLE
                         } else {
-                            scheduleTextView.text = "No schedule found for today."
+                            emptyView.visibility = View.VISIBLE
                         }
                     } else {
-                        // Handle API error
-                        scheduleTextView.text = "Failed to load schedule. Error: ${response.code()}"
+                        emptyView.text = "Failed to load schedule. Error: ${response.code()}"
+                        empty_view.visibility = View.VISIBLE
                     }
                 }
             } catch (e: Exception) {
-                // Handle network or other exceptions
                 withContext(Dispatchers.Main) {
                     progressBar.visibility = View.GONE
-                    scheduleTextView.text = "An error occurred: ${e.message}"
+                    emptyView.text = "An error occurred: ${e.message}"
+                    emptyView.visibility = View.VISIBLE
                 }
             }
         }
