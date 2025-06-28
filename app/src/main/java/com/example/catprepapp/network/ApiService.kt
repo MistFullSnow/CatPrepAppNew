@@ -34,6 +34,13 @@ data class DashboardResponse(
     val weakestTopics: List<WeakestTopic>
 )
 
+// Represents the structured list of topics from our API
+data class TopicsResponse(
+    val qa: List<String>,
+    val dilr: List<String>,
+    val varc: List<String>
+)
+
 // This is the full URL of your deployed Google Apps Script
 // IMPORTANT: Replace "YOUR_WEB_APP_URL" with your actual URL
 private const val BASE_URL = "https://script.google.com/macros/s/AKfycbzXtyR6MdMIisKa-DT2k4JaubdMhbEEg98A_ap5ZeI4tVoyeRaUKwuUA5ISQTCRBAug/"
@@ -79,7 +86,12 @@ interface ApiService {
         @Query("action") action: String = "getDashboard",
         @Query("secret") secret: String = SECRET_KEY
     ): Response<DashboardResponse>
-    
+
+    @GET("exec")
+    suspend fun getTopics(
+        @Query("action") action: String = "getTopics",
+        @Query("secret") secret: String = SECRET_KEY
+    ): Response<TopicsResponse>
 }
 
 // This creates a public object that the rest of our app can use to call the API
