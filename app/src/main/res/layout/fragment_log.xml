@@ -24,13 +24,12 @@
         <!-- ... They remain exactly the same as our last version ... -->
         <!-- To save space, I'm not re-pasting them all here, but they should be in this spot -->
         
-        <EditText
-            android:id="@+id/topicEditText"
+        <Spinner
+            android:id="@+id/topicSpinner"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Topic Studied (e.g., Arithmetic)"
-            android:textColor="@color/white"
-            android:textColorHint="#888888"
+            android:layout_height="50dp"
+            android:background="@android:drawable/btn_dropdown"
+            android:backgroundTint="@android:color/white"
             android:layout_marginBottom="16dp"/>
 
         <EditText
