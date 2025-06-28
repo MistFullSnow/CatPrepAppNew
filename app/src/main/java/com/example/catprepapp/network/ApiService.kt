@@ -36,7 +36,7 @@ data class DashboardResponse(
 
 // This is the full URL of your deployed Google Apps Script
 // IMPORTANT: Replace "YOUR_WEB_APP_URL" with your actual URL
-private const val BASE_URL = "https://script.google.com/macros/s/AKfycbzbvWxrqB_JPZoY-w3hz-MaNfs0vwQuyyD48V7d0I7MSfYFIAI3RywEGzqfAbZ-7maY/"
+private const val BASE_URL = "https://script.google.com/macros/s/AKfycbzXtyR6MdMIisKa-DT2k4JaubdMhbEEg98A_ap5ZeI4tVoyeRaUKwuUA5ISQTCRBAug/"
 
 // IMPORTANT: Replace "YOUR_SECRET_KEY" with the key you chose (e.g., "CATPREP123")
 private const val SECRET_KEY = "CATPREP123"
