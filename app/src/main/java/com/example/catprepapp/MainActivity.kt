@@ -58,11 +58,22 @@ class MainActivity : AppCompatActivity() {
         }
 
         // Handle tab selection
-        bottomNavView.setOnItemSelectedListener { item ->
-            viewPager.setCurrentItem(bottomNavView.menu.indexOf(item), false)
+        // Replace the existing setOnItemSelectedListener block with this one
+        bottomNavView.setOnItemSelectedListener { selectedItem ->
+            // --- NEW: Correct way to find the index of the selected item ---
+            var selectedIndex = 0
+            for (i in 0 until bottomNavView.menu.size()) {
+                if (bottomNavView.menu.getItem(i) == selectedItem) {
+                    selectedIndex = i
+                    break
+                }
+            }
+            viewPager.setCurrentItem(selectedIndex, false)
+            // --- End of correction ---
+        
             // Play animation for selected tab, reset others
             lottieAnimations.forEach { (id, lottieView) ->
-                if (id == item.itemId) {
+                if (id == selectedItem.itemId) {
                     lottieView.playAnimation()
                 } else {
                     lottieView.cancelAnimation()
