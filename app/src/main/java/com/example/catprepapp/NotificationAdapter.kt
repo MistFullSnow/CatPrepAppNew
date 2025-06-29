@@ -1,5 +1,6 @@
 package com.example.catprepapp
 
+import android.app.AlertDialog
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -16,7 +17,6 @@ class NotificationAdapter(private val notificationList: List<NotificationItem>) 
         val titleText: TextView = itemView.findViewById(R.id.notificationTitleText)
         val bodyText: TextView = itemView.findViewById(R.id.notificationBodyText)
         val timestampText: TextView = itemView.findViewById(R.id.notificationTimestampText)
-        val showMoreText: TextView = itemView.findViewById(R.id.showMoreText)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): NotificationViewHolder {
@@ -32,38 +32,23 @@ class NotificationAdapter(private val notificationList: List<NotificationItem>) 
         
         // --- Timestamp formatting ---
         try {
-            // This format now matches what we save from Apps Script
             val parser = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault())
-            parser.timeZone = TimeZone.getTimeZone("UTC") // Timestamps from script are UTC
+            parser.timeZone = TimeZone.getTimeZone("UTC")
             val date = parser.parse(item.timestamp)
             val formatter = SimpleDateFormat("MMM dd, yyyy, h:mm a", Locale.getDefault())
             holder.timestampText.text = formatter.format(date)
         } catch (e: Exception) {
-            holder.timestampText.text = item.timestamp // Fallback for safety
+            holder.timestampText.text = item.timestamp
         }
 
-        // --- CORRECTED "SHOW MORE" LOGIC ---
-        // Set initial state
-        holder.bodyText.maxLines = 3
-        holder.showMoreText.text = "Show More"
-        holder.showMoreText.visibility = View.GONE // Hide by default
-
-        // Use post to reliably get line count after layout
-        holder.bodyText.post {
-            if (holder.bodyText.lineCount > 3) {
-                holder.showMoreText.visibility = View.VISIBLE
-            }
-        }
-
-        holder.showMoreText.setOnClickListener {
-            val isExpanded = holder.bodyText.maxLines != 3
-            if (isExpanded) {
-                holder.bodyText.maxLines = 3
-                holder.showMoreText.text = "Show More"
-            } else {
-                holder.bodyText.maxLines = Integer.MAX_VALUE
-                holder.showMoreText.text = "Show Less"
-            }
+        // --- NEW: Set click listener on the entire card ---
+        holder.itemView.setOnClickListener {
+            // Create and show a dialog with the full content
+            AlertDialog.Builder(holder.itemView.context, R.style.AlertDialog_Dark)
+                .setTitle(item.title)
+                .setMessage(item.body)
+                .setPositiveButton("Close", null)
+                .show()
         }
     }
 
