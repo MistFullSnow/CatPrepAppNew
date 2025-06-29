@@ -83,7 +83,6 @@ class DashboardFragment : Fragment() {
     }
     
     // --- THE NEW, SIMPLIFIED, AND CORRECT BAR CHART FUNCTION ---
-    // --- THE FINAL, CORRECTED BAR CHART FUNCTION ---
     private fun setupVerticalBarChart(data: DashboardResponse) {
         val barChart = view?.findViewById<BarChart>(R.id.topicBarChart) ?: return
         if (data.topicPerformance.isEmpty()) {
@@ -108,16 +107,16 @@ class DashboardFragment : Fragment() {
         dataSet.valueTextSize = 10f
     
         val barData = BarData(dataSet)
-        barData.barWidth = 0.6f // A good width for the bars
+        barData.barWidth = 0.5f // A good width for the bars
         barChart.data = barData
         
-        // --- SIMPLE, CLEAN, AND READABLE STYLING ---
+        // --- SIMPLE AND READABLE STYLING ---
         barChart.description.isEnabled = false
         barChart.legend.isEnabled = false
         barChart.setPinchZoom(false)
         barChart.setDrawGridBackground(false)
         barChart.setDrawValueAboveBar(true)
-        barChart.isDragEnabled = true // Make sure scrolling is enabled
+        barChart.isDragEnabled = true
         
         val xAxis = barChart.xAxis
         xAxis.position = XAxis.XAxisPosition.BOTTOM
@@ -125,11 +124,9 @@ class DashboardFragment : Fragment() {
         xAxis.granularity = 1f
         xAxis.textColor = Color.WHITE
         xAxis.valueFormatter = IndexAxisValueFormatter(labels)
-        
-        // --- THIS IS THE FIX FOR WRAPPING LABELS ---
-        xAxis.setLabelCount(labels.size, false) // Ensure all labels are considered
-        xAxis.labelRotationAngle = 0f          // Keep labels horizontal
-        barChart.extraBottomOffset = 16f         // Add extra space at the bottom for wrapped labels
+        xAxis.labelRotationAngle = 0f // Keep labels horizontal
+        xAxis.setCenterAxisLabels(true) // Center labels under the bars
+        xAxis.setAvoidFirstLastClipping(true) // Prevent first/last labels from being cut
     
         val yAxisLeft = barChart.axisLeft
         yAxisLeft.textColor = Color.WHITE
@@ -139,9 +136,21 @@ class DashboardFragment : Fragment() {
     
         barChart.axisRight.isEnabled = false
         
-        // Set a fixed number of bars visible at once to enable scrolling
-        barChart.setVisibleXRangeMaximum(4f)
-        barChart.moveViewTo(0f, 0f, YAxis.AxisDependency.LEFT) // Start at the beginning
+        // --- THE KEY FIX: DYNAMICALLY SETTING THE VIEWPORT ---
+        // Calculate the total width the chart needs to be readable
+        val visibleBarCount = 5f // How many bars to show on screen at once
+        val totalBars = labels.size.toFloat()
+        
+        // This ensures the chart is wide enough to not squish the labels
+        val scale = totalBars / visibleBarCount
+        barChart.viewPortHandler.matrix.setScale(scale, 1f)
+        
+        // This prevents the user from zooming out too far and squishing it again
+        barChart.setVisibleXRangeMaximum(visibleBarCount)
+        barChart.setVisibleXRangeMinimum(visibleBarCount)
+    
+        // Start the chart scrolled to the beginning
+        barChart.moveViewToX(0f)
         
         barChart.invalidate()
     }
