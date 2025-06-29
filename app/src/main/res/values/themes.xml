@@ -1,14 +1,15 @@
-<resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme. -->
-    <style name="Theme.CatPrepApp" parent="Theme.MaterialComponents.DayNight.NoActionBar">
-        <!-- Customize your theme here. -->
-    </style>
-
-    <!-- NEW: Custom style for our Dark Dialogs -->
-    <style name="AlertDialog.Dark" parent="Theme.AppCompat.Dialog.Alert">
-        <item name="android:background">#1C1C1E</item> <!-- Dark background for the dialog window -->
-        <item name="android:textColor">#FFFFFF</item> <!-- Text color for the message -->
-        <item name="android:textColorPrimary">#FFFFFF</item> <!-- Text color for the title -->
-        <item name="colorAccent">#FFFFFF</item> <!-- Color for buttons like "OK" / "Cancel" -->
-    </style>
-</resources>
+<style name="Theme.CatPrepApp" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+    <!-- Primary brand color. -->
+    <item name="colorPrimary">@color/white</item>
+    <item name="colorPrimaryVariant">@color/white</item>
+    <item name="colorOnPrimary">@color/black</item>
+    <!-- Secondary brand color. -->
+    <item name="colorSecondary">#4A4A4C</item> <!-- A nice dark grey -->
+    <item name="colorSecondaryVariant">#4A4A4C</item>
+    <item name="colorOnSecondary">@color/white</item>
+    <!-- Status bar color. -->
+    <item name="android:statusBarColor">?attr/colorPrimaryVariant</item>
+    
+    <!-- THIS IS THE KEY FIX: It controls the color of sliders, progress bars, etc. -->
+    <item name="colorAccent">@color/white</item>
+</style>
