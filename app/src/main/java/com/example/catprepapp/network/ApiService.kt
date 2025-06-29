@@ -48,14 +48,29 @@ data class LogHistoryResponse(
 // Add these two new data classes
 data class WeakestTopic(
     val topic: String,
-    val avgConfidence: Int
+    val avgConfidence: Int,
+    val totalQuestions: Int,
+    val ppm: Int
+)
+
+data class TopicPerformance(
+    val topic: String,
+    val ppm: Int
+)
+
+data class SectionalConfidence(
+    val qa: Int,
+    val dilr: Int,
+    val varc: Int
 )
 
 data class DashboardResponse(
     val totalQuestions: Int,
     val avgConfidence: Int,
-    val streakDays: Int,
-    val weakestTopics: List<WeakestTopic>
+    val studyDays: Int,
+    val weakestTopics: List<WeakestTopic>,
+    val topicPerformance: List<TopicPerformance>,
+    val sectionalConfidence: SectionalConfidence
 )
 
 // Represents the structured list of topics from our API
@@ -67,7 +82,7 @@ data class TopicsResponse(
 
 // This is the full URL of your deployed Google Apps Script
 // IMPORTANT: Replace "YOUR_WEB_APP_URL" with your actual URL
-private const val BASE_URL = "https://script.google.com/macros/s/AKfycbx3QbNQPd2p6EvYBudHoZ4QmjSG6dLSlXSybb9Fp_p94CgU4wzGSP_x4uFEWgYahb9G/"
+private const val BASE_URL = "https://script.google.com/macros/s/AKfycbzseQ3wtXjxkL9zFpjxN3vKg7IWgH2uoFk1-acgxvhXqnyg5gp6IMS7wjSNp2htK5xm/"
 
 // IMPORTANT: Replace "YOUR_SECRET_KEY" with the key you chose (e.g., "CATPREP123")
 private const val SECRET_KEY = "CATPREP123"
