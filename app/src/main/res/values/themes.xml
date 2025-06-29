@@ -1,15 +1,20 @@
-<style name="Theme.CatPrepApp" parent="Theme.MaterialComponents.DayNight.NoActionBar">
-    <!-- Primary brand color. -->
-    <item name="colorPrimary">@color/white</item>
-    <item name="colorPrimaryVariant">@color/white</item>
-    <item name="colorOnPrimary">@color/black</item>
-    <!-- Secondary brand color. -->
-    <item name="colorSecondary">#4A4A4C</item> <!-- A nice dark grey -->
-    <item name="colorSecondaryVariant">#4A4A4C</item>
-    <item name="colorOnSecondary">@color/white</item>
-    <!-- Status bar color. -->
-    <item name="android:statusBarColor">?attr/colorPrimaryVariant</item>
-    
-    <!-- THIS IS THE KEY FIX: It controls the color of sliders, progress bars, etc. -->
-    <item name="colorAccent">@color/white</item>
-</style>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Base application theme. -->
+    <style name="Theme.CatPrepApp" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <!-- Set primary and accent colors directly -->
+        <item name="colorPrimary">#FFFFFFFF</item> <!-- White -->
+        <item name="colorOnPrimary">#FF000000</item> <!-- Black -->
+        <item name="colorAccent">#FFFFFFFF</item> <!-- White for sliders, progress bars -->
+        
+        <!-- Set Status bar color -->
+        <item name="android:statusBarColor">#FF000000</item> <!-- Black -->
+    </style>
+
+    <!-- Custom style for our Dark Dialogs -->
+    <style name="AlertDialog.Dark" parent="Theme.AppCompat.Dialog.Alert">
+        <item name="android:background">#1C1C1E</item>
+        <item name="android:textColor">#FFFFFF</item>
+        <item name="android:textColorPrimary">#FFFFFF</item>
+        <item name="colorAccent">#FFFFFF</item>
+    </style>
+</resources>
