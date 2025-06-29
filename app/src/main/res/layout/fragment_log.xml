@@ -99,12 +99,11 @@
             android:textColor="@color/white"/>
 
         <ProgressBar
-            android:id="@+id/logProgressBar"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:visibility="gone"
-            android:layout_marginTop="16dp"/>
+            android:id="@+id/inboxProgressBar"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:indeterminateDrawable="@drawable/loader_animation"
+            android:layout_centerInParent="true"/>
         
         <!-- NEW: Divider and RecyclerView for history -->
         <View
