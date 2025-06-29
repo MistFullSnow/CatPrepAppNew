@@ -63,15 +63,22 @@ class DashboardFragment : Fragment() {
 
     private fun populateDashboard(data: DashboardResponse) {
         setupKeyStats(data)
+        setupSectionalPerformance(data) // <-- NEW FUNCTION CALL
         setupRadarChart(data)
         setupWeakestTopics(data)
     }
     
-    // RE-ADDED THIS FUNCTION
     private fun setupKeyStats(data: DashboardResponse) {
         view?.findViewById<TextView>(R.id.totalQuestionsText)?.text = data.totalQuestions.toString()
         view?.findViewById<TextView>(R.id.avgConfidenceText)?.text = "${data.avgConfidence}%"
         view?.findViewById<TextView>(R.id.studyDaysText)?.text = data.studyDays.toString()
+    }
+
+    // --- NEW FUNCTION TO POPULATE SECTIONAL SCORES ---
+    private fun setupSectionalPerformance(data: DashboardResponse) {
+        view?.findViewById<TextView>(R.id.qaScoreText)?.text = "${data.sectionalConfidence.qa}%"
+        view?.findViewById<TextView>(R.id.dilrScoreText)?.text = "${data.sectionalConfidence.dilr}%"
+        view?.findViewById<TextView>(R.id.varcScoreText)?.text = "${data.sectionalConfidence.varc}%"
     }
     
     private fun setupRadarChart(data: DashboardResponse) {
@@ -85,14 +92,12 @@ class DashboardFragment : Fragment() {
         val entries = ArrayList<RadarEntry>()
         val labels = ArrayList<String>()
         
-        // We only show a max of 7 topics on the radar chart for readability
         data.topicPerformance.take(7).forEach {
             entries.add(RadarEntry(it.ppm.toFloat()))
             labels.add(it.topic)
         }
 
         val dataSet = RadarDataSet(entries, "Topic Performance")
-        // --- CORRECTED COLOR SCHEME ---
         dataSet.color = Color.WHITE
         dataSet.fillColor = Color.GRAY
         dataSet.setDrawFilled(true)
@@ -115,7 +120,7 @@ class DashboardFragment : Fragment() {
         radarChart.webColor = Color.GRAY
         radarChart.webColorInner = Color.DKGRAY
         
-        radarChart.invalidate() // Refresh chart
+        radarChart.invalidate()
     }
 
     private fun setupWeakestTopics(data: DashboardResponse) {
