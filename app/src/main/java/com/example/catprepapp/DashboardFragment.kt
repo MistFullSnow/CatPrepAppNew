@@ -98,7 +98,9 @@ class DashboardFragment : Fragment() {
         
         sortedTopics.forEachIndexed { index, topic ->
             entries.add(BarEntry(index.toFloat(), topic.ppm.toFloat()))
-            labels.add(topic.topic)
+            // Wrap long labels to multiple lines
+            val wrappedLabel = wrapText(topic.topic, 10) // Wrap after 10 characters
+            labels.add(wrappedLabel)
         }
     
         val dataSet = BarDataSet(entries, "Topic Score")
@@ -107,52 +109,83 @@ class DashboardFragment : Fragment() {
         dataSet.valueTextSize = 10f
     
         val barData = BarData(dataSet)
-        barData.barWidth = 0.5f // A good width for the bars
+        // Make bars wider - this is key for proper spacing
+        barData.barWidth = 0.8f
         barChart.data = barData
         
-        // --- SIMPLE AND READABLE STYLING ---
+        // Basic chart styling
         barChart.description.isEnabled = false
         barChart.legend.isEnabled = false
         barChart.setPinchZoom(false)
         barChart.setDrawGridBackground(false)
         barChart.setDrawValueAboveBar(true)
         barChart.isDragEnabled = true
+        barChart.setScaleEnabled(false) // Disable scaling to prevent squishing
         
+        // X-Axis configuration
         val xAxis = barChart.xAxis
         xAxis.position = XAxis.XAxisPosition.BOTTOM
         xAxis.setDrawGridLines(false)
         xAxis.granularity = 1f
         xAxis.textColor = Color.WHITE
+        xAxis.textSize = 10f
         xAxis.valueFormatter = IndexAxisValueFormatter(labels)
         xAxis.labelRotationAngle = 0f // Keep labels horizontal
-        xAxis.setCenterAxisLabels(true) // Center labels under the bars
-        xAxis.setAvoidFirstLastClipping(true) // Prevent first/last labels from being cut
-    
+        xAxis.isGranularityEnabled = true
+        xAxis.setLabelCount(labels.size, false)
+        xAxis.setAvoidFirstLastClipping(true)
+        
+        // Y-Axis configuration
         val yAxisLeft = barChart.axisLeft
         yAxisLeft.textColor = Color.WHITE
         yAxisLeft.axisMinimum = 0f
         yAxisLeft.setDrawGridLines(true)
         yAxisLeft.gridColor = Color.DKGRAY
+        yAxisLeft.textSize = 10f
     
         barChart.axisRight.isEnabled = false
         
-        // --- THE KEY FIX: DYNAMICALLY SETTING THE VIEWPORT ---
-        // Calculate the total width the chart needs to be readable
-        val visibleBarCount = 5f // How many bars to show on screen at once
-        val totalBars = labels.size.toFloat()
+        // Calculate proper width for the chart
+        val barCount = labels.size
+        val minBarWidth = 120 // Minimum width per bar in dp
+        val chartWidth = barCount * minBarWidth
         
-        // This ensures the chart is wide enough to not squish the labels
-        val scale = totalBars / visibleBarCount
-        barChart.viewPortHandler.matrix.setScale(scale, 1f)
+        // Set the chart width programmatically
+        val layoutParams = barChart.layoutParams
+        layoutParams.width = (chartWidth * resources.displayMetrics.density).toInt()
+        barChart.layoutParams = layoutParams
         
-        // This prevents the user from zooming out too far and squishing it again
-        barChart.setVisibleXRangeMaximum(visibleBarCount)
-        barChart.setVisibleXRangeMinimum(visibleBarCount)
-    
-        // Start the chart scrolled to the beginning
-        barChart.moveViewToX(0f)
+        // Set extra offsets to prevent label clipping
+        barChart.setExtraOffsets(10f, 10f, 10f, 40f) // left, top, right, bottom
         
         barChart.invalidate()
+    }
+    
+    // Helper function to wrap text
+    private fun wrapText(text: String, maxLength: Int): String {
+        if (text.length <= maxLength) return text
+        
+        val words = text.split(" ")
+        val result = StringBuilder()
+        var currentLine = StringBuilder()
+        
+        for (word in words) {
+            if (currentLine.length + word.length + 1 <= maxLength) {
+                if (currentLine.isNotEmpty()) currentLine.append(" ")
+                currentLine.append(word)
+            } else {
+                if (result.isNotEmpty()) result.append("\n")
+                result.append(currentLine.toString())
+                currentLine = StringBuilder(word)
+            }
+        }
+        
+        if (currentLine.isNotEmpty()) {
+            if (result.isNotEmpty()) result.append("\n")
+            result.append(currentLine.toString())
+        }
+        
+        return result.toString()
     }
     private fun setupWeakestTopics(data: DashboardResponse) {
         // This function remains the same
