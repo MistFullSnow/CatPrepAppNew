@@ -6,11 +6,12 @@
     android:padding="24dp">
 
     <ProgressBar
-        android:id="@+id/inboxProgressBar"
+        android:id="@+id/dashboardProgressBar"
         android:layout_width="48dp"
         android:layout_height="48dp"
         android:indeterminateDrawable="@drawable/loader_animation"
-        android:layout_centerInParent="true"/>
+        android:layout_centerInParent="true"
+        android:visibility="visible" />
         
     <LinearLayout
         android:id="@+id/dashboardContent"
