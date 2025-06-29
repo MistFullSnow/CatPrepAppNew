@@ -23,9 +23,10 @@ class MainActivity : AppCompatActivity() {
         bottomNavView.setOnItemSelectedListener { item ->
             when (item.itemId) {
                 R.id.navigation_dashboard -> viewPager.setCurrentItem(0, false) // New
-                R.id.navigation_schedule -> viewPager.setCurrentItem(1, false) // New
-                R.id.navigation_log -> viewPager.setCurrentItem(2, false)      // New
-                R.id.navigation_catbot -> viewPager.setCurrentItem(3, false)   // Stays the same
+                R.id.navigation_inbox -> viewPager.setCurrentItem(1, false) // NEW
+                R.id.navigation_schedule -> viewPager.setCurrentItem(2, false) // New
+                R.id.navigation_log -> viewPager.setCurrentItem(3, false)      // New
+                R.id.navigation_catbot -> viewPager.setCurrentItem(4, false)   // Stays the same
             }
             true
         }
