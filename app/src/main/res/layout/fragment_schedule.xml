@@ -5,11 +5,12 @@
     android:background="#000000">
 
     <ProgressBar
-        android:id="@+id/inboxProgressBar"
+        android:id="@+id/progressBar"
         android:layout_width="48dp"
         android:layout_height="48dp"
         android:indeterminateDrawable="@drawable/loader_animation"
-        android:layout_centerInParent="true"/>
+        android:layout_centerInParent="true"
+        android:visibility="gone" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/scheduleRecyclerView"
