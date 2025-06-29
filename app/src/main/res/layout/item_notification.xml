@@ -8,11 +8,21 @@
     android:layout_marginHorizontal="16dp"
     android:layout_marginVertical="8dp">
 
+    <!-- Timestamp at the top -->
+    <TextView
+        android:id="@+id/notificationTimestampText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Jun 30, 2025, 8:00 AM"
+        android:textColor="#A0A0A0"
+        android:textSize="12sp"
+        android:layout_marginBottom="8dp"/>
+
     <TextView
         android:id="@+id/notificationTitleText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Your Daily Plan"
+        android:text="Your Daily Prep Briefing"
         android:textColor="#FFFFFF"
         android:textSize="18sp"
         android:textStyle="bold"/>
@@ -21,18 +31,22 @@
         android:id="@+id/notificationBodyText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Here is the plan for today..."
+        android:text="Here is the plan for today... with a lot more text to see how it truncates properly and shows the rest of the content."
         android:textColor="#E0E0E0"
         android:textSize="14sp"
-        android:layout_marginTop="8dp"/>
+        android:layout_marginTop="8dp"
+        android:maxLines="3"
+        android:ellipsize="end"/>
         
+    <!-- "Show More" button -->
     <TextView
-        android:id="@+id/notificationTimestampText"
+        android:id="@+id/showMoreText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Jun 30, 2025"
-        android:textColor="#A0A0A0"
-        android:textSize="12sp"
-        android:layout_gravity="end"
-        android:layout_marginTop="12dp"/>
+        android:text="Show More"
+        android:textColor="#FFFFFF"
+        android:textStyle="bold"
+        android:layout_marginTop="8dp"
+        android:visibility="gone"/>
+
 </LinearLayout>
