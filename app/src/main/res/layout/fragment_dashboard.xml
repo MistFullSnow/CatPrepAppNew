@@ -1,118 +1,69 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#000000"
-    android:padding="24dp">
+    android:fillViewport="true">
 
-    <ProgressBar
-        android:id="@+id/dashboardProgressBar"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        android:indeterminateDrawable="@drawable/loader_animation"
-        android:layout_centerInParent="true"
-        android:visibility="visible" />
-        
     <LinearLayout
-        android:id="@+id/dashboardContent"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:visibility="gone">
+        android:padding="16dp">
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Your Progress Dashboard"
-            android:textColor="@color/white"
-            android:textSize="24sp"
-            android:textStyle="bold"/>
-
-        <!-- Stats Section -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginTop="32dp"
-            android:weightSum="3">
-
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:gravity="center"
-                android:orientation="vertical">
-                <TextView
-                    android:id="@+id/totalQuestionsText"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="-"
-                    android:textColor="@color/white"
-                    android:textSize="28sp"/>
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Questions"
-                    android:textColor="#A0A0A0"/>
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:gravity="center"
-                android:orientation="vertical">
-                <TextView
-                    android:id="@+id/avgConfidenceText"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="-%"
-                    android:textColor="@color/white"
-                    android:textSize="28sp"/>
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Confidence"
-                    android:textColor="#A0A0A0"/>
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:gravity="center"
-                android:orientation="vertical">
-                <TextView
-                    android:id="@+id/streakDaysText"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="-"
-                    android:textColor="@color/white"
-                    android:textSize="28sp"/>
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Study Days"
-                    android:textColor="#A0A0A0"/>
-            </LinearLayout>
-        </LinearLayout>
-
-        <!-- Weakest Topics Section -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Top 3 Areas to Focus On"
-            android:textColor="@color/white"
-            android:textSize="20sp"
-            android:layout_marginTop="48dp"/>
+        <ProgressBar
+            android:id="@+id/dashboardProgressBar"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:indeterminateDrawable="@drawable/loader_animation"
+            android:layout_gravity="center"
+            android:visibility="visible" />
 
         <LinearLayout
-            android:id="@+id/weakestTopicsLayout"
+            android:id="@+id/dashboardContent"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:layout_marginTop="16dp"/>
+            android:visibility="gone">
 
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Your Progress Dashboard"
+                android:textColor="@color/white"
+                android:textSize="24sp"
+                android:textStyle="bold"/>
+            
+            <!-- Bar Chart for Total Questions and Confidence -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Overall Performance"
+                android:textColor="@color/white"
+                android:textSize="18sp"
+                android:layout_marginTop="24dp"/>
+
+            <com.github.mikephil.charting.charts.BarChart
+                android:id="@+id/performanceBarChart"
+                android:layout_width="match_parent"
+                android:layout_height="200dp"
+                android:layout_marginTop="8dp"/>
+
+            <!-- Weakest Topics Section -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Top 3 Areas to Focus On"
+                android:textColor="@color/white"
+                android:textSize="18sp"
+                android:layout_marginTop="32dp"/>
+
+            <LinearLayout
+                android:id="@+id/weakestTopicsLayout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginTop="8dp"/>
+        </LinearLayout>
     </LinearLayout>
-
-</RelativeLayout>
+</ScrollView>
