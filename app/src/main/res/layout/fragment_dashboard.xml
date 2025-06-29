@@ -181,10 +181,10 @@
                 android:textColor="@color/white"
                 android:textSize="18sp"
                 android:layout_marginTop="32dp"/>
-            <com.github.mikephil.charting.charts.RadarChart
-                android:id="@+id/topicRadarChart"
+            <com.github.mikephil.charting.charts.HorizontalBarChart
+                android:id="@+id/topicBarChart"
                 android:layout_width="match_parent"
-                android:layout_height="300dp"
+                android:layout_height="400dp"
                 android:layout_marginTop="8dp"/>
 
             <!-- Weakest Topics Section -->
