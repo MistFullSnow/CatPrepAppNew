@@ -33,20 +33,43 @@
                 android:textColor="@color/white"
                 android:textSize="24sp"
                 android:textStyle="bold"/>
-            
-            <!-- Bar Chart for Total Questions and Confidence -->
+
+            <!-- Key Stats Section -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginTop="24dp"
+                android:weightSum="3">
+                <!-- Text views for Total Questions, Avg Confidence, Study Days go here -->
+            </LinearLayout>
+
+            <!-- Sectional Confidence Pie Chart -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Overall Performance"
+                android:text="Sectional Confidence"
                 android:textColor="@color/white"
                 android:textSize="18sp"
-                android:layout_marginTop="24dp"/>
-
-            <com.github.mikephil.charting.charts.BarChart
-                android:id="@+id/performanceBarChart"
+                android:layout_marginTop="32dp"/>
+            <com.github.mikephil.charting.charts.PieChart
+                android:id="@+id/sectionalPieChart"
                 android:layout_width="match_parent"
-                android:layout_height="200dp"
+                android:layout_height="250dp"
+                android:layout_marginTop="8dp"/>
+
+            <!-- Topic Performance Radar Chart -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Topic Performance Score (PPM)"
+                android:textColor="@color/white"
+                android:textSize="18sp"
+                android:layout_marginTop="32dp"/>
+            <com.github.mikephil.charting.charts.RadarChart
+                android:id="@+id/topicRadarChart"
+                android:layout_width="match_parent"
+                android:layout_height="300dp"
                 android:layout_marginTop="8dp"/>
 
             <!-- Weakest Topics Section -->
@@ -57,7 +80,6 @@
                 android:textColor="@color/white"
                 android:textSize="18sp"
                 android:layout_marginTop="32dp"/>
-
             <LinearLayout
                 android:id="@+id/weakestTopicsLayout"
                 android:layout_width="match_parent"
