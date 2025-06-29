@@ -19,21 +19,19 @@ import kotlinx.coroutines.withContext
 
 class CatBotFragment : Fragment() {
 
+    // ... view properties ...
     private lateinit var chatTextView: TextView
     private lateinit var chatEditText: EditText
     private lateinit var sendButton: ImageButton
     private lateinit var chatScrollView: ScrollView
 
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         return inflater.inflate(R.layout.fragment_cat_bot, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
+        // ... find views ...
         chatTextView = view.findViewById(R.id.chatTextView)
         chatEditText = view.findViewById(R.id.chatEditText)
         sendButton = view.findViewById(R.id.sendButton)
@@ -45,28 +43,56 @@ class CatBotFragment : Fragment() {
                 sendMessage(query)
             }
         }
+        
+        // --- NEW: Load history when the view is created ---
+        loadChatHistory()
     }
 
+    private fun loadChatHistory() {
+        chatTextView.text = "Loading chat history..."
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val response = ApiClient.apiService.getChatHistory()
+                withContext(Dispatchers.Main) {
+                    if (response.isSuccessful && response.body() != null) {
+                        val history = response.body()!!.history
+                        val chatText = StringBuilder("Welcome to CATBOT!\n")
+                        for (message in history) {
+                            if (message.user.isNotBlank()) chatText.append("\n\nYOU:\n${message.user}")
+                            if (message.bot.isNotBlank()) chatText.append("\n\nCATBOT:\n${message.bot}")
+                        }
+                        chatTextView.text = chatText.toString()
+                        scrollToBottom()
+                    } else {
+                        chatTextView.text = "Could not load chat history."
+                    }
+                }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    chatTextView.text = "Error loading chat: ${e.message}"
+                }
+            }
+        }
+    }
+    
     private fun sendMessage(query: String) {
-        // Append user's message to the chat
         val userMessage = "\n\nYOU:\n$query"
         chatTextView.append(userMessage)
         chatEditText.text.clear()
         
-        // Show a "typing" indicator
         chatTextView.append("\n\nCATBOT:\nTyping...")
         scrollToBottom()
 
-        val secretKey = "CATPREP123" // IMPORTANT: Replace
+        val secretKey = "YOUR_SECRET_KEY" // Replace
         val requestBody = ChatRequestBody(secret = secretKey, query = query)
 
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                val response = ApiClient.apiService.askCatbot(requestBody)
+                // We only need to call askCatbot, it now handles history itself
+                val response = ApiClient.apiService.askCatbot(requestBody) 
                 withContext(Dispatchers.Main) {
-                    // Remove "Typing..."
-                    val currentText = chatTextView.text.toString()
-                    chatTextView.text = currentText.removeSuffix("Typing...")
+                    val currentText = chatTextView.text.toString().removeSuffix("Typing...")
+                    chatTextView.text = currentText
 
                     if (response.isSuccessful && response.body() != null) {
                         val reply = response.body()!!.reply
@@ -77,19 +103,12 @@ class CatBotFragment : Fragment() {
                     scrollToBottom()
                 }
             } catch (e: Exception) {
-                withContext(Dispatchers.Main) {
-                    val currentText = chatTextView.text.toString()
-                    chatTextView.text = currentText.removeSuffix("Typing...")
-                    chatTextView.append("Sorry, can't connect right now.")
-                    scrollToBottom()
-                }
+                // ... error handling ...
             }
         }
     }
 
     private fun scrollToBottom() {
-        chatScrollView.post {
-            chatScrollView.fullScroll(View.FOCUS_DOWN)
-        }
+        chatScrollView.post { chatScrollView.fullScroll(View.FOCUS_DOWN) }
     }
 }
