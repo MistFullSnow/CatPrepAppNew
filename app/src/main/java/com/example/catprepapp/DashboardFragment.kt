@@ -98,8 +98,12 @@ class DashboardFragment : Fragment() {
         
         sortedTopics.forEachIndexed { index, topic ->
             entries.add(BarEntry(index.toFloat(), topic.ppm.toFloat()))
-            // Wrap long labels to multiple lines - using shorter length for better wrapping
-            val wrappedLabel = wrapText(topic.topic, 8) // Wrap after 8 characters
+            // Debug: Log the original topic name to see what we're getting
+            println("Original topic: '${topic.topic}' (length: ${topic.topic.length})")
+            
+            // Try smart wrapping first, then force wrapping if needed
+            val wrappedLabel = smartWrapText(topic.topic, 10) // Try 10 chars first
+            println("Wrapped topic: '$wrappedLabel'")
             labels.add(wrappedLabel)
         }
     
@@ -161,70 +165,71 @@ class DashboardFragment : Fragment() {
         barChart.invalidate()
     }
     
-    // Helper function to wrap text
-    private fun wrapText(text: String, maxLength: Int): String {
+    // Helper function to force wrap text - breaks long text even without spaces
+    private fun forceWrapText(text: String, maxLength: Int): String {
         if (text.length <= maxLength) return text
         
-        // For very long words, force break them
-        if (text.contains(" ")) {
-            // Handle text with spaces
-            val words = text.split(" ")
-            val result = StringBuilder()
-            var currentLine = StringBuilder()
+        val result = StringBuilder()
+        var currentIndex = 0
+        
+        while (currentIndex < text.length) {
+            val endIndex = minOf(currentIndex + maxLength, text.length)
+            val chunk = text.substring(currentIndex, endIndex)
             
-            for (word in words) {
-                // If single word is too long, break it
-                if (word.length > maxLength) {
+            if (result.isNotEmpty()) {
+                result.append("\n")
+            }
+            result.append(chunk)
+            currentIndex = endIndex
+        }
+        
+        return result.toString()
+    }
+    
+    // Alternative helper function that tries to break at natural points
+    private fun smartWrapText(text: String, maxLength: Int): String {
+        if (text.length <= maxLength) return text
+        
+        // First try to split on common delimiters
+        val delimiters = listOf(" ", ",", "and", "on", "of", "in", "at", "to", "for")
+        
+        for (delimiter in delimiters) {
+            if (text.contains(delimiter, ignoreCase = true)) {
+                val parts = text.split(delimiter, ignoreCase = true)
+                if (parts.size > 1) {
+                    val result = StringBuilder()
+                    var currentLine = StringBuilder()
+                    
+                    for (i in parts.indices) {
+                        val part = parts[i]
+                        val connector = if (i < parts.size - 1) delimiter else ""
+                        
+                        if (currentLine.length + part.length + connector.length <= maxLength) {
+                            currentLine.append(part)
+                            if (connector.isNotEmpty()) currentLine.append(connector)
+                        } else {
+                            if (result.isNotEmpty()) result.append("\n")
+                            if (currentLine.isNotEmpty()) {
+                                result.append(currentLine.toString())
+                                currentLine = StringBuilder()
+                            }
+                            currentLine.append(part)
+                            if (connector.isNotEmpty()) currentLine.append(connector)
+                        }
+                    }
+                    
                     if (currentLine.isNotEmpty()) {
                         if (result.isNotEmpty()) result.append("\n")
                         result.append(currentLine.toString())
-                        currentLine = StringBuilder()
                     }
-                    // Break long word into chunks
-                    var remainingWord = word
-                    while (remainingWord.length > maxLength) {
-                        if (result.isNotEmpty() || currentLine.isNotEmpty()) result.append("\n")
-                        result.append(remainingWord.substring(0, maxLength))
-                        remainingWord = remainingWord.substring(maxLength)
-                    }
-                    if (remainingWord.isNotEmpty()) {
-                        if (result.isNotEmpty()) result.append("\n")
-                        result.append(remainingWord)
-                    }
-                } else {
-                    // Normal word processing
-                    if (currentLine.length + word.length + 1 <= maxLength) {
-                        if (currentLine.isNotEmpty()) currentLine.append(" ")
-                        currentLine.append(word)
-                    } else {
-                        if (result.isNotEmpty()) result.append("\n")
-                        result.append(currentLine.toString())
-                        currentLine = StringBuilder(word)
-                    }
+                    
+                    return result.toString()
                 }
             }
-            
-            if (currentLine.isNotEmpty()) {
-                if (result.isNotEmpty()) result.append("\n")
-                result.append(currentLine.toString())
-            }
-            
-            return result.toString()
-        } else {
-            // Handle single long word without spaces - force break it
-            val result = StringBuilder()
-            var remainingText = text
-            while (remainingText.length > maxLength) {
-                if (result.isNotEmpty()) result.append("\n")
-                result.append(remainingText.substring(0, maxLength))
-                remainingText = remainingText.substring(maxLength)
-            }
-            if (remainingText.isNotEmpty()) {
-                if (result.isNotEmpty()) result.append("\n")
-                result.append(remainingText)
-            }
-            return result.toString()
         }
+        
+        // If no delimiters found, force break
+        return forceWrapText(text, maxLength)
     }
     private fun setupWeakestTopics(data: DashboardResponse) {
         // This function remains the same
