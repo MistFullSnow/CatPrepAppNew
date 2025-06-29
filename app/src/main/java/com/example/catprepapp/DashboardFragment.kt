@@ -9,14 +9,14 @@ import android.widget.LinearLayout
 import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
-import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import com.example.catprepapp.network.ApiClient
 import com.example.catprepapp.network.DashboardResponse
-import com.github.mikephil.charting.charts.PieChart
 import com.github.mikephil.charting.charts.RadarChart
 import com.github.mikephil.charting.components.XAxis
-import com.github.mikephil.charting.data.*
+import com.github.mikephil.charting.data.RadarData
+import com.github.mikephil.charting.data.RadarDataSet
+import com.github.mikephil.charting.data.RadarEntry
 import com.github.mikephil.charting.formatter.IndexAxisValueFormatter
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -62,58 +62,44 @@ class DashboardFragment : Fragment() {
     }
 
     private fun populateDashboard(data: DashboardResponse) {
-        // Re-populate the simple stats if you want them
-        // setupKeyStats(data) 
-        setupPieChart(data)
+        setupKeyStats(data)
         setupRadarChart(data)
         setupWeakestTopics(data)
     }
-
-    private fun setupPieChart(data: DashboardResponse) {
-        val pieChart = view?.findViewById<PieChart>(R.id.sectionalPieChart) ?: return
-        
-        val entries = ArrayList<PieEntry>()
-        entries.add(PieEntry(data.sectionalConfidence.qa.toFloat(), "QA"))
-        entries.add(PieEntry(data.sectionalConfidence.dilr.toFloat(), "DILR"))
-        entries.add(PieEntry(data.sectionalConfidence.varc.toFloat(), "VARC"))
-
-        val dataSet = PieDataSet(entries, "Sectional Confidence")
-        dataSet.colors = listOf(
-            ContextCompat.getColor(requireContext(), android.R.color.holo_blue_light),
-            ContextCompat.getColor(requireContext(), android.R.color.holo_green_light),
-            ContextCompat.getColor(requireContext(), android.R.color.holo_orange_light)
-        )
-        dataSet.valueTextColor = Color.BLACK
-        dataSet.valueTextSize = 14f
-        
-        pieChart.data = PieData(dataSet)
-        pieChart.description.isEnabled = false
-        pieChart.isDrawHoleEnabled = true
-        pieChart.setHoleColor(Color.TRANSPARENT)
-        pieChart.setEntryLabelColor(Color.WHITE)
-        pieChart.legend.textColor = Color.WHITE
-        pieChart.invalidate()
+    
+    // RE-ADDED THIS FUNCTION
+    private fun setupKeyStats(data: DashboardResponse) {
+        view?.findViewById<TextView>(R.id.totalQuestionsText)?.text = data.totalQuestions.toString()
+        view?.findViewById<TextView>(R.id.avgConfidenceText)?.text = "${data.avgConfidence}%"
+        view?.findViewById<TextView>(R.id.studyDaysText)?.text = data.studyDays.toString()
     }
     
     private fun setupRadarChart(data: DashboardResponse) {
         val radarChart = view?.findViewById<RadarChart>(R.id.topicRadarChart) ?: return
-        if (data.topicPerformance.isEmpty()) return
+        if (data.topicPerformance.isEmpty()) {
+            radarChart.visibility = View.GONE
+            return
+        }
+        radarChart.visibility = View.VISIBLE
 
         val entries = ArrayList<RadarEntry>()
         val labels = ArrayList<String>()
         
-        data.topicPerformance.forEach {
+        // We only show a max of 7 topics on the radar chart for readability
+        data.topicPerformance.take(7).forEach {
             entries.add(RadarEntry(it.ppm.toFloat()))
             labels.add(it.topic)
         }
 
-        val dataSet = RadarDataSet(entries, "Topic PPM Score")
-        dataSet.color = Color.CYAN
-        dataSet.fillColor = Color.CYAN
+        val dataSet = RadarDataSet(entries, "Topic Performance")
+        // --- CORRECTED COLOR SCHEME ---
+        dataSet.color = Color.WHITE
+        dataSet.fillColor = Color.GRAY
         dataSet.setDrawFilled(true)
         dataSet.valueTextColor = Color.WHITE
         dataSet.valueTextSize = 10f
-        
+        dataSet.lineWidth = 2f
+
         radarChart.data = RadarData(dataSet)
         radarChart.description.isEnabled = false
         
@@ -128,7 +114,8 @@ class DashboardFragment : Fragment() {
         radarChart.legend.isEnabled = false
         radarChart.webColor = Color.GRAY
         radarChart.webColorInner = Color.DKGRAY
-        radarChart.invalidate()
+        
+        radarChart.invalidate() // Refresh chart
     }
 
     private fun setupWeakestTopics(data: DashboardResponse) {
@@ -144,6 +131,13 @@ class DashboardFragment : Fragment() {
                 }
                 weakestTopicsLayout.addView(topicView)
             }
+        } else {
+             val noTopicsView = TextView(context).apply {
+                    text = "Not enough data for topic analysis yet."
+                    setTextColor(Color.GRAY)
+                    textSize = 16f
+                }
+            weakestTopicsLayout.addView(noTopicsView)
         }
     }
 }
