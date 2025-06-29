@@ -9,28 +9,24 @@ import android.widget.LinearLayout
 import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import com.example.catprepapp.network.ApiClient
 import com.example.catprepapp.network.DashboardResponse
-import com.github.mikephil.charting.charts.BarChart
+import com.github.mikephil.charting.charts.PieChart
+import com.github.mikephil.charting.charts.RadarChart
 import com.github.mikephil.charting.components.XAxis
-import com.github.mikephil.charting.data.BarData
-import com.github.mikephil.charting.data.BarDataSet
-import com.github.mikephil.charting.data.BarEntry
+import com.github.mikephil.charting.data.*
+import com.github.mikephil.charting.formatter.IndexAxisValueFormatter
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class DashboardFragment : Fragment() {
-    // ... (onCreateView is the same) ...
+
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         return inflater.inflate(R.layout.fragment_dashboard, container, false)
-    }
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-        fetchDashboardData()
     }
     
     override fun onResume() {
@@ -41,7 +37,6 @@ class DashboardFragment : Fragment() {
     private fun fetchDashboardData() {
         val progressBar = view?.findViewById<ProgressBar>(R.id.dashboardProgressBar)
         val contentView = view?.findViewById<LinearLayout>(R.id.dashboardContent)
-
         progressBar?.visibility = View.VISIBLE
         contentView?.visibility = View.GONE
 
@@ -54,7 +49,7 @@ class DashboardFragment : Fragment() {
                         populateDashboard(response.body()!!)
                         contentView?.visibility = View.VISIBLE
                     } else {
-                        Toast.makeText(context, "Failed to load dashboard", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, "Failed to load dashboard data.", Toast.LENGTH_SHORT).show()
                     }
                 }
             } catch (e: Exception) {
@@ -67,65 +62,88 @@ class DashboardFragment : Fragment() {
     }
 
     private fun populateDashboard(data: DashboardResponse) {
-        setupBarChart(data)
+        // Re-populate the simple stats if you want them
+        // setupKeyStats(data) 
+        setupPieChart(data)
+        setupRadarChart(data)
         setupWeakestTopics(data)
     }
+
+    private fun setupPieChart(data: DashboardResponse) {
+        val pieChart = view?.findViewById<PieChart>(R.id.sectionalPieChart) ?: return
+        
+        val entries = ArrayList<PieEntry>()
+        entries.add(PieEntry(data.sectionalConfidence.qa.toFloat(), "QA"))
+        entries.add(PieEntry(data.sectionalConfidence.dilr.toFloat(), "DILR"))
+        entries.add(PieEntry(data.sectionalConfidence.varc.toFloat(), "VARC"))
+
+        val dataSet = PieDataSet(entries, "Sectional Confidence")
+        dataSet.colors = listOf(
+            ContextCompat.getColor(requireContext(), android.R.color.holo_blue_light),
+            ContextCompat.getColor(requireContext(), android.R.color.holo_green_light),
+            ContextCompat.getColor(requireContext(), android.R.color.holo_orange_light)
+        )
+        dataSet.valueTextColor = Color.BLACK
+        dataSet.valueTextSize = 14f
+        
+        pieChart.data = PieData(dataSet)
+        pieChart.description.isEnabled = false
+        pieChart.isDrawHoleEnabled = true
+        pieChart.setHoleColor(Color.TRANSPARENT)
+        pieChart.setEntryLabelColor(Color.WHITE)
+        pieChart.legend.textColor = Color.WHITE
+        pieChart.invalidate()
+    }
     
-    private fun setupBarChart(data: DashboardResponse) {
-        val barChart = view?.findViewById<BarChart>(R.id.performanceBarChart) ?: return
-        
-        val entries = ArrayList<BarEntry>()
-        entries.add(BarEntry(0f, data.totalQuestions.toFloat()))
-        entries.add(BarEntry(1f, data.avgConfidence.toFloat()))
-        entries.add(BarEntry(2f, data.streakDays.toFloat()))
+    private fun setupRadarChart(data: DashboardResponse) {
+        val radarChart = view?.findViewById<RadarChart>(R.id.topicRadarChart) ?: return
+        if (data.topicPerformance.isEmpty()) return
 
-        val dataSet = BarDataSet(entries, "Performance Metrics")
-        dataSet.colors = listOf(Color.WHITE, Color.LTGRAY, Color.GRAY)
+        val entries = ArrayList<RadarEntry>()
+        val labels = ArrayList<String>()
+        
+        data.topicPerformance.forEach {
+            entries.add(RadarEntry(it.ppm.toFloat()))
+            labels.add(it.topic)
+        }
+
+        val dataSet = RadarDataSet(entries, "Topic PPM Score")
+        dataSet.color = Color.CYAN
+        dataSet.fillColor = Color.CYAN
+        dataSet.setDrawFilled(true)
         dataSet.valueTextColor = Color.WHITE
-        dataSet.valueTextSize = 12f
-
-        val barData = BarData(dataSet)
-        barChart.data = barData
-
-        // Chart styling
-        barChart.description.isEnabled = false
-        barChart.legend.isEnabled = false
-        barChart.setDrawValueAboveBar(true)
-        barChart.setFitBars(true)
+        dataSet.valueTextSize = 10f
         
-        val xAxis = barChart.xAxis
-        xAxis.position = XAxis.XAxisPosition.BOTTOM
-        xAxis.setDrawGridLines(false)
+        radarChart.data = RadarData(dataSet)
+        radarChart.description.isEnabled = false
+        
+        val xAxis = radarChart.xAxis
+        xAxis.valueFormatter = IndexAxisValueFormatter(labels)
         xAxis.textColor = Color.WHITE
-        xAxis.valueFormatter = com.github.mikephil.charting.formatter.IndexAxisValueFormatter(listOf("Questions", "Confidence", "Days"))
         
-        barChart.axisLeft.textColor = Color.WHITE
-        barChart.axisRight.isEnabled = false
+        val yAxis = radarChart.yAxis
+        yAxis.textColor = Color.WHITE
+        yAxis.axisMinimum = 0f
         
-        barChart.invalidate() // Refresh chart
+        radarChart.legend.isEnabled = false
+        radarChart.webColor = Color.GRAY
+        radarChart.webColorInner = Color.DKGRAY
+        radarChart.invalidate()
     }
 
     private fun setupWeakestTopics(data: DashboardResponse) {
         val weakestTopicsLayout = view?.findViewById<LinearLayout>(R.id.weakestTopicsLayout) ?: return
-        
         weakestTopicsLayout.removeAllViews()
         if (data.weakestTopics.isNotEmpty()) {
             data.weakestTopics.forEach { topic ->
                 val topicView = TextView(context).apply {
-                    text = "• ${topic.topic} (${topic.avgConfidence}% confidence)"
+                    text = "• ${topic.topic} (Score: ${topic.ppm}, Conf: ${topic.avgConfidence}%)"
                     setTextColor(Color.WHITE)
                     textSize = 16f
                     setPadding(0, 8, 0, 8)
                 }
                 weakestTopicsLayout.addView(topicView)
             }
-        } else {
-             val noTopicsView = TextView(context).apply {
-                    text = "Not enough data for topic analysis yet."
-                    setTextColor(Color.GRAY)
-                    textSize = 16f
-                }
-            weakestTopicsLayout.addView(noTopicsView)
         }
     }
 }
