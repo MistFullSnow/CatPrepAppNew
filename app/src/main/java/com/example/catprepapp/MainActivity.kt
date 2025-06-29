@@ -4,12 +4,24 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.viewpager2.widget.ViewPager2
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.google.firebase.messaging.FirebaseMessaging
+import android.widget.Toast
 
 class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        
+        FirebaseMessaging.getInstance().subscribeToTopic("daily_summary")
+            .addOnCompleteListener { task ->
+                var msg = "Subscribed to daily_summary topic"
+                if (!task.isSuccessful) {
+                    msg = "Subscription to daily_summary failed"
+                }
+                // This Toast is just for debugging, you can remove it later
+                Toast.makeText(baseContext, msg, Toast.LENGTH_SHORT).show()
+        }
 
         val viewPager = findViewById<ViewPager2>(R.id.viewPager)
         val bottomNavView = findViewById<BottomNavigationView>(R.id.bottomNavView)
