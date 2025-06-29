@@ -98,13 +98,13 @@ class DashboardFragment : Fragment() {
         
         sortedTopics.forEachIndexed { index, topic ->
             entries.add(BarEntry(index.toFloat(), topic.ppm.toFloat()))
-            // Debug: Log the original topic name to see what we're getting
-            println("Original topic: '${topic.topic}' (length: ${topic.topic.length})")
-            
-            // Try smart wrapping first, then force wrapping if needed
-            val wrappedLabel = smartWrapText(topic.topic, 10) // Try 10 chars first
-            println("Wrapped topic: '$wrappedLabel'")
-            labels.add(wrappedLabel)
+            // Truncate very long labels and add "..." instead of trying to wrap
+            val shortLabel = if (topic.topic.length > 12) {
+                topic.topic.substring(0, 9) + "..."
+            } else {
+                topic.topic
+            }
+            labels.add(shortLabel)
         }
     
         val dataSet = BarDataSet(entries, "Topic Score")
@@ -113,8 +113,7 @@ class DashboardFragment : Fragment() {
         dataSet.valueTextSize = 10f
     
         val barData = BarData(dataSet)
-        // Make bars wider - this is key for proper spacing
-        barData.barWidth = 0.8f
+        barData.barWidth = 0.7f // Slightly smaller to give more space
         barChart.data = barData
         
         // Basic chart styling
@@ -124,20 +123,22 @@ class DashboardFragment : Fragment() {
         barChart.setDrawGridBackground(false)
         barChart.setDrawValueAboveBar(true)
         barChart.isDragEnabled = true
-        barChart.setScaleEnabled(false) // Disable scaling to prevent squishing
+        barChart.setScaleEnabled(false)
         
-        // X-Axis configuration
+        // X-Axis configuration - key changes here
         val xAxis = barChart.xAxis
         xAxis.position = XAxis.XAxisPosition.BOTTOM
         xAxis.setDrawGridLines(false)
         xAxis.granularity = 1f
         xAxis.textColor = Color.WHITE
-        xAxis.textSize = 10f
+        xAxis.textSize = 9f // Smaller text
         xAxis.valueFormatter = IndexAxisValueFormatter(labels)
-        xAxis.labelRotationAngle = 0f // Keep labels horizontal
+        xAxis.labelRotationAngle = 0f
         xAxis.isGranularityEnabled = true
         xAxis.setLabelCount(labels.size, false)
         xAxis.setAvoidFirstLastClipping(true)
+        xAxis.spaceMin = 0.5f // Add space before first bar
+        xAxis.spaceMax = 0.5f // Add space after last bar
         
         // Y-Axis configuration
         val yAxisLeft = barChart.axisLeft
@@ -149,9 +150,9 @@ class DashboardFragment : Fragment() {
     
         barChart.axisRight.isEnabled = false
         
-        // Calculate proper width for the chart
+        // Calculate proper width - giving more space per bar
         val barCount = labels.size
-        val minBarWidth = 120 // Minimum width per bar in dp
+        val minBarWidth = 140 // Increased width per bar
         val chartWidth = barCount * minBarWidth
         
         // Set the chart width programmatically
@@ -159,77 +160,29 @@ class DashboardFragment : Fragment() {
         layoutParams.width = (chartWidth * resources.displayMetrics.density).toInt()
         barChart.layoutParams = layoutParams
         
-        // Set extra offsets to prevent label clipping - increased bottom offset for multi-line labels
-        barChart.setExtraOffsets(10f, 10f, 10f, 60f) // left, top, right, bottom
+        // Reduced bottom offset since we're not using multi-line labels
+        barChart.setExtraOffsets(15f, 10f, 15f, 30f)
         
         barChart.invalidate()
     }
     
-    // Helper function to force wrap text - breaks long text even without spaces
-    private fun forceWrapText(text: String, maxLength: Int): String {
-        if (text.length <= maxLength) return text
-        
-        val result = StringBuilder()
-        var currentIndex = 0
-        
-        while (currentIndex < text.length) {
-            val endIndex = minOf(currentIndex + maxLength, text.length)
-            val chunk = text.substring(currentIndex, endIndex)
+    // Alternative approach: Create a custom formatter that handles long text
+    private class CustomXAxisFormatter(private val labels: List<String>) : IndexAxisValueFormatter() {
+        override fun getFormattedValue(value: Float): String {
+            val index = value.toInt()
+            if (index < 0 || index >= labels.size) return ""
             
-            if (result.isNotEmpty()) {
-                result.append("\n")
-            }
-            result.append(chunk)
-            currentIndex = endIndex
-        }
-        
-        return result.toString()
-    }
-    
-    // Alternative helper function that tries to break at natural points
-    private fun smartWrapText(text: String, maxLength: Int): String {
-        if (text.length <= maxLength) return text
-        
-        // First try to split on common delimiters
-        val delimiters = listOf(" ", ",", "and", "on", "of", "in", "at", "to", "for")
-        
-        for (delimiter in delimiters) {
-            if (text.contains(delimiter, ignoreCase = true)) {
-                val parts = text.split(delimiter, ignoreCase = true)
-                if (parts.size > 1) {
-                    val result = StringBuilder()
-                    var currentLine = StringBuilder()
-                    
-                    for (i in parts.indices) {
-                        val part = parts[i]
-                        val connector = if (i < parts.size - 1) delimiter else ""
-                        
-                        if (currentLine.length + part.length + connector.length <= maxLength) {
-                            currentLine.append(part)
-                            if (connector.isNotEmpty()) currentLine.append(connector)
-                        } else {
-                            if (result.isNotEmpty()) result.append("\n")
-                            if (currentLine.isNotEmpty()) {
-                                result.append(currentLine.toString())
-                                currentLine = StringBuilder()
-                            }
-                            currentLine.append(part)
-                            if (connector.isNotEmpty()) currentLine.append(connector)
-                        }
-                    }
-                    
-                    if (currentLine.isNotEmpty()) {
-                        if (result.isNotEmpty()) result.append("\n")
-                        result.append(currentLine.toString())
-                    }
-                    
-                    return result.toString()
-                }
+            val label = labels[index]
+            return if (label.length > 12) {
+                // Split long labels into two lines using \n
+                val mid = label.length / 2
+                val firstPart = label.substring(0, mid)
+                val secondPart = label.substring(mid)
+                "$firstPart\n$secondPart"
+            } else {
+                label
             }
         }
-        
-        // If no delimiters found, force break
-        return forceWrapText(text, maxLength)
     }
     private fun setupWeakestTopics(data: DashboardResponse) {
         // This function remains the same
