@@ -12,11 +12,11 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import com.example.catprepapp.network.ApiClient
 import com.example.catprepapp.network.DashboardResponse
-import com.github.mikephil.charting.charts.RadarChart
+import com.github.mikephil.charting.charts.HorizontalBarChart // NEW IMPORT
 import com.github.mikephil.charting.components.XAxis
-import com.github.mikephil.charting.data.RadarData
-import com.github.mikephil.charting.data.RadarDataSet
-import com.github.mikephil.charting.data.RadarEntry
+import com.github.mikephil.charting.data.BarData
+import com.github.mikephil.charting.data.BarDataSet
+import com.github.mikephil.charting.data.BarEntry
 import com.github.mikephil.charting.formatter.IndexAxisValueFormatter
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -63,8 +63,8 @@ class DashboardFragment : Fragment() {
 
     private fun populateDashboard(data: DashboardResponse) {
         setupKeyStats(data)
-        setupSectionalPerformance(data) // <-- NEW FUNCTION CALL
-        setupRadarChart(data)
+        setupSectionalPerformance(data)
+        setupHorizontalBarChart(data) // <-- CHANGED from setupRadarChart
         setupWeakestTopics(data)
     }
     
@@ -74,53 +74,77 @@ class DashboardFragment : Fragment() {
         view?.findViewById<TextView>(R.id.studyDaysText)?.text = data.studyDays.toString()
     }
 
-    // --- NEW FUNCTION TO POPULATE SECTIONAL SCORES ---
     private fun setupSectionalPerformance(data: DashboardResponse) {
         view?.findViewById<TextView>(R.id.qaScoreText)?.text = "${data.sectionalConfidence.qa}%"
         view?.findViewById<TextView>(R.id.dilrScoreText)?.text = "${data.sectionalConfidence.dilr}%"
         view?.findViewById<TextView>(R.id.varcScoreText)?.text = "${data.sectionalConfidence.varc}%"
     }
     
-    private fun setupRadarChart(data: DashboardResponse) {
-        val radarChart = view?.findViewById<RadarChart>(R.id.topicRadarChart) ?: return
+    // --- NEW AND IMPROVED CHART FUNCTION ---
+    private fun setupHorizontalBarChart(data: DashboardResponse) {
+        val barChart = view?.findViewById<HorizontalBarChart>(R.id.topicBarChart) ?: return
         if (data.topicPerformance.isEmpty()) {
-            radarChart.visibility = View.GONE
+            barChart.visibility = View.GONE
             return
         }
-        radarChart.visibility = View.VISIBLE
+        barChart.visibility = View.VISIBLE
 
-        val entries = ArrayList<RadarEntry>()
+        // Sort topics by PPM score so the best are at the top
+        val sortedTopics = data.topicPerformance.sortedByDescending { it.ppm }
+
+        val entries = ArrayList<BarEntry>()
         val labels = ArrayList<String>()
         
-        data.topicPerformance.take(7).forEach {
-            entries.add(RadarEntry(it.ppm.toFloat()))
-            labels.add(it.topic)
+        // The library plots from bottom to top, so we reverse the list for display
+        sortedTopics.asReversed().forEachIndexed { index, topic ->
+            entries.add(BarEntry(index.toFloat(), topic.ppm.toFloat()))
+            // The library doesn't support multi-line labels well, so we abbreviate long ones
+            labels.add(abbreviateTopic(topic.topic))
         }
 
-        val dataSet = RadarDataSet(entries, "Topic Performance")
+        val dataSet = BarDataSet(entries, "Topic Score")
         dataSet.color = Color.WHITE
-        dataSet.fillColor = Color.GRAY
-        dataSet.setDrawFilled(true)
-        dataSet.valueTextColor = Color.WHITE
-        dataSet.valueTextSize = 10f
-        dataSet.lineWidth = 2f
+        dataSet.valueTextColor = Color.BLACK
+        dataSet.valueTextSize = 12f
 
-        radarChart.data = RadarData(dataSet)
-        radarChart.description.isEnabled = false
+        barChart.data = BarData(dataSet)
         
-        val xAxis = radarChart.xAxis
-        xAxis.valueFormatter = IndexAxisValueFormatter(labels)
+        // --- STYLING AND SCROLLING ---
+        barChart.description.isEnabled = false
+        barChart.legend.isEnabled = false
+        barChart.setDrawGridBackground(false)
+        barChart.setDrawValueAboveBar(true)
+        barChart.setPinchZoom(false) // Disable pinch zoom
+
+        val xAxis = barChart.xAxis
+        xAxis.position = XAxis.XAxisPosition.BOTTOM
+        xAxis.setDrawGridLines(false)
+        xAxis.setDrawAxisLine(false)
+        xAxis.granularity = 1f
         xAxis.textColor = Color.WHITE
+        xAxis.textSize = 12f
+        xAxis.valueFormatter = IndexAxisValueFormatter(labels)
         
-        val yAxis = radarChart.yAxis
-        yAxis.textColor = Color.WHITE
-        yAxis.axisMinimum = 0f
+        val leftAxis = barChart.axisLeft
+        leftAxis.textColor = Color.WHITE
+        leftAxis.axisMinimum = 0f
+
+        barChart.axisRight.isEnabled = false
         
-        radarChart.legend.isEnabled = false
-        radarChart.webColor = Color.GRAY
-        radarChart.webColorInner = Color.DKGRAY
+        // This makes only a few bars visible at a time, enabling scrolling
+        barChart.setVisibleXRangeMaximum(5f)
+        barChart.moveViewToX(labels.size.toFloat()) // Start scrolled to the end (top of the list)
         
-        radarChart.invalidate()
+        barChart.invalidate() // Refresh chart
+    }
+    
+    // Helper function to shorten long topic names
+    private fun abbreviateTopic(topic: String): String {
+        return if (topic.length > 20) {
+            topic.substring(0, 18) + "..."
+        } else {
+            topic
+        }
     }
 
     private fun setupWeakestTopics(data: DashboardResponse) {
