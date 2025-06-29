@@ -83,7 +83,7 @@ class CatBotFragment : Fragment() {
         chatTextView.append("\n\nCATBOT:\nTyping...")
         scrollToBottom()
 
-        val secretKey = "YOUR_SECRET_KEY" // Replace
+        val secretKey = "CATPREP123" // Replace
         val requestBody = ChatRequestBody(secret = secretKey, query = query)
 
         CoroutineScope(Dispatchers.IO).launch {
