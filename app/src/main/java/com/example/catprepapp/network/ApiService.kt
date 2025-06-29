@@ -11,6 +11,16 @@ import retrofit2.http.POST   // New import
 data class ChatMessage(val user: String, val bot: String)
 data class ChatHistoryResponse(val history: List<ChatMessage>)
 
+data class NotificationItem(
+    val timestamp: String,
+    val title: String,
+    val body: String
+)
+
+data class NotificationsResponse(
+    val notifications: List<NotificationItem>
+)
+
 // Add these two new data classes
 data class ChatRequestBody(
     val action: String = "askCatbot",
@@ -116,6 +126,11 @@ interface ApiService {
         @Query("action") action: String = "getChatHistory",
         @Query("secret") secret: String = SECRET_KEY
     ): Response<ChatHistoryResponse>
+    @GET("exec")
+    suspend fun getNotifications(
+        @Query("action") action: String = "getNotifications",
+        @Query("secret") secret: String = SECRET_KEY
+    ): Response<NotificationsResponse>
 }
 
 // This creates a public object that the rest of our app can use to call the API
