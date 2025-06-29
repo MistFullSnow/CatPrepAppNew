@@ -67,7 +67,7 @@ data class TopicsResponse(
 
 // This is the full URL of your deployed Google Apps Script
 // IMPORTANT: Replace "YOUR_WEB_APP_URL" with your actual URL
-private const val BASE_URL = "https://script.google.com/macros/s/AKfycbwwwHQPUJZPLPsvFCIz6mZ9y_g-LABElitO9z1rYnNqo2d1P55_5T7rLtU2oRRDz_rh/"
+private const val BASE_URL = "https://script.google.com/macros/s/AKfycbzvELQSRGndcvOn6o4KcIcFdYCTTWnMlJF9YxdAgEi5sc8wIly_eUdGGM9IpsxWa546/"
 
 // IMPORTANT: Replace "YOUR_SECRET_KEY" with the key you chose (e.g., "CATPREP123")
 private const val SECRET_KEY = "CATPREP123"
