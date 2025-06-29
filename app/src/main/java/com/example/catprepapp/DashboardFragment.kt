@@ -98,8 +98,8 @@ class DashboardFragment : Fragment() {
         
         sortedTopics.forEachIndexed { index, topic ->
             entries.add(BarEntry(index.toFloat(), topic.ppm.toFloat()))
-            // Wrap long labels to multiple lines
-            val wrappedLabel = wrapText(topic.topic, 10) // Wrap after 10 characters
+            // Wrap long labels to multiple lines - using shorter length for better wrapping
+            val wrappedLabel = wrapText(topic.topic, 8) // Wrap after 8 characters
             labels.add(wrappedLabel)
         }
     
@@ -155,8 +155,8 @@ class DashboardFragment : Fragment() {
         layoutParams.width = (chartWidth * resources.displayMetrics.density).toInt()
         barChart.layoutParams = layoutParams
         
-        // Set extra offsets to prevent label clipping
-        barChart.setExtraOffsets(10f, 10f, 10f, 40f) // left, top, right, bottom
+        // Set extra offsets to prevent label clipping - increased bottom offset for multi-line labels
+        barChart.setExtraOffsets(10f, 10f, 10f, 60f) // left, top, right, bottom
         
         barChart.invalidate()
     }
@@ -165,27 +165,66 @@ class DashboardFragment : Fragment() {
     private fun wrapText(text: String, maxLength: Int): String {
         if (text.length <= maxLength) return text
         
-        val words = text.split(" ")
-        val result = StringBuilder()
-        var currentLine = StringBuilder()
-        
-        for (word in words) {
-            if (currentLine.length + word.length + 1 <= maxLength) {
-                if (currentLine.isNotEmpty()) currentLine.append(" ")
-                currentLine.append(word)
-            } else {
+        // For very long words, force break them
+        if (text.contains(" ")) {
+            // Handle text with spaces
+            val words = text.split(" ")
+            val result = StringBuilder()
+            var currentLine = StringBuilder()
+            
+            for (word in words) {
+                // If single word is too long, break it
+                if (word.length > maxLength) {
+                    if (currentLine.isNotEmpty()) {
+                        if (result.isNotEmpty()) result.append("\n")
+                        result.append(currentLine.toString())
+                        currentLine = StringBuilder()
+                    }
+                    // Break long word into chunks
+                    var remainingWord = word
+                    while (remainingWord.length > maxLength) {
+                        if (result.isNotEmpty() || currentLine.isNotEmpty()) result.append("\n")
+                        result.append(remainingWord.substring(0, maxLength))
+                        remainingWord = remainingWord.substring(maxLength)
+                    }
+                    if (remainingWord.isNotEmpty()) {
+                        if (result.isNotEmpty()) result.append("\n")
+                        result.append(remainingWord)
+                    }
+                } else {
+                    // Normal word processing
+                    if (currentLine.length + word.length + 1 <= maxLength) {
+                        if (currentLine.isNotEmpty()) currentLine.append(" ")
+                        currentLine.append(word)
+                    } else {
+                        if (result.isNotEmpty()) result.append("\n")
+                        result.append(currentLine.toString())
+                        currentLine = StringBuilder(word)
+                    }
+                }
+            }
+            
+            if (currentLine.isNotEmpty()) {
                 if (result.isNotEmpty()) result.append("\n")
                 result.append(currentLine.toString())
-                currentLine = StringBuilder(word)
             }
+            
+            return result.toString()
+        } else {
+            // Handle single long word without spaces - force break it
+            val result = StringBuilder()
+            var remainingText = text
+            while (remainingText.length > maxLength) {
+                if (result.isNotEmpty()) result.append("\n")
+                result.append(remainingText.substring(0, maxLength))
+                remainingText = remainingText.substring(maxLength)
+            }
+            if (remainingText.isNotEmpty()) {
+                if (result.isNotEmpty()) result.append("\n")
+                result.append(remainingText)
+            }
+            return result.toString()
         }
-        
-        if (currentLine.isNotEmpty()) {
-            if (result.isNotEmpty()) result.append("\n")
-            result.append(currentLine.toString())
-        }
-        
-        return result.toString()
     }
     private fun setupWeakestTopics(data: DashboardResponse) {
         // This function remains the same
