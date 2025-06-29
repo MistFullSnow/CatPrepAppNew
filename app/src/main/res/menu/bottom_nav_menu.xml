@@ -1,23 +1,35 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:android="http://schemas.android.com/apk/res/android">
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
     <item
         android:id="@+id/navigation_dashboard"
-        android:icon="@android:drawable/ic_menu_gallery"
-        android:title="Dashboard" />
+        android:title="Dashboard"
+        app:actionLayout="@layout/menu_item_lottie"
+        app:showAsAction="ifRoom" />
+        
     <item
         android:id="@+id/navigation_inbox"
-        android:icon="@android:drawable/ic_dialog_email"
-        android:title="Inbox" />
+        android:title="Inbox"
+        app:actionLayout="@layout/menu_item_lottie"
+        app:showAsAction="ifRoom" />
+
     <item
         android:id="@+id/navigation_schedule"
-        android:icon="@android:drawable/ic_menu_my_calendar"
-        android:title="Schedule" />
+        android:title="Schedule"
+        app:actionLayout="@layout/menu_item_lottie"
+        app:showAsAction="ifRoom" />
+
     <item
         android:id="@+id/navigation_log"
-        android:icon="@android:drawable/ic_menu_edit"
-        android:title="Log" />
+        android:title="Log"
+        app:actionLayout="@layout/menu_item_lottie"
+        app:showAsAction="ifRoom" />
+
     <item
         android:id="@+id/navigation_catbot"
-        android:icon="@android:drawable/ic_menu_send"
-        android:title="CatBot" />
+        android:title="CatBot"
+        app:actionLayout="@layout/menu_item_lottie"
+        app:showAsAction="ifRoom" />
+        
 </menu>
