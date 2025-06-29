@@ -6,9 +6,11 @@
     android:background="#1C1C1E"
     android:padding="16dp"
     android:layout_marginHorizontal="16dp"
-    android:layout_marginVertical="8dp">
+    android:layout_marginVertical="8dp"
+    android:clickable="true"
+    android:focusable="true"
+    android:foreground="?attr/selectableItemBackground">
 
-    <!-- Timestamp at the top -->
     <TextView
         android:id="@+id/notificationTimestampText"
         android:layout_width="wrap_content"
@@ -31,22 +33,11 @@
         android:id="@+id/notificationBodyText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Here is the plan for today... with a lot more text to see how it truncates properly and shows the rest of the content."
+        android:text="Here is the plan for today... with a lot more text to see how it truncates properly."
         android:textColor="#E0E0E0"
         android:textSize="14sp"
         android:layout_marginTop="8dp"
         android:maxLines="3"
         android:ellipsize="end"/>
-        
-    <!-- "Show More" button -->
-    <TextView
-        android:id="@+id/showMoreText"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Show More"
-        android:textColor="#FFFFFF"
-        android:textStyle="bold"
-        android:layout_marginTop="8dp"
-        android:visibility="gone"/>
 
 </LinearLayout>
