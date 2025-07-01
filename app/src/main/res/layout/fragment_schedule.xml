@@ -3,7 +3,13 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#000000">
-
+    <Button
+        android:id="@+id/essayButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Read Today's Essay"
+        android:layout_margin="16dp"
+        android:backgroundTint="#333333"/>
     <ProgressBar
         android:id="@+id/progressBar"
         android:layout_width="48dp"
