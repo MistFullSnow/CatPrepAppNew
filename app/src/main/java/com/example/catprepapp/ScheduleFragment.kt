@@ -14,6 +14,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import android.content.Intent
 
 class ScheduleFragment : Fragment() {
 
@@ -38,6 +39,12 @@ class ScheduleFragment : Fragment() {
         recyclerView.layoutManager = LinearLayoutManager(context)
         
         fetchSchedule()
+
+        val essayButton = view.findViewById<Button>(R.id.essayButton)
+        essayButton.setOnClickListener {
+            val intent = Intent(context, EssayActivity::class.java)
+            startActivity(intent)
+        }
     }
 
     private fun fetchSchedule() {
