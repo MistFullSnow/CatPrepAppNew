@@ -8,6 +8,15 @@ import retrofit2.http.Query
 import retrofit2.http.Body // New import
 import retrofit2.http.POST   // New import
 
+data class EssayResponse(val title: String, val content: String)
+
+// Data class for saving a word
+data class VocabRequestBody(
+    val action: String = "saveVocabularyWord",
+    val secret: String,
+    val word: String
+)
+
 data class ChatMessage(val user: String, val bot: String)
 data class ChatHistoryResponse(val history: List<ChatMessage>)
 
@@ -146,6 +155,16 @@ interface ApiService {
         @Query("action") action: String = "getNotifications",
         @Query("secret") secret: String = SECRET_KEY
     ): Response<NotificationsResponse>
+
+    // Inside interface ApiService
+    @GET("exec")
+    suspend fun getDailyEssay(
+        @Query("action") action: String = "getDailyEssay",
+        @Query("secret") secret: String = SECRET_KEY
+    ): Response<EssayResponse>
+    
+    @POST("exec")
+    suspend fun saveVocabWord(@Body requestBody: VocabRequestBody): Response<Unit>
 }
 
 // This creates a public object that the rest of our app can use to call the API
