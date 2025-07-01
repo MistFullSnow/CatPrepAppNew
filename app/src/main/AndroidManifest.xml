@@ -38,6 +38,8 @@
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_color"
             android:resource="@android:color/white" />
+        
+        <activity android:name=".EssayActivity" />
             
     </application>
 
